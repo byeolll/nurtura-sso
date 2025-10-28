@@ -9,12 +9,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyB29swhL51Yma7m6-oPEtNTpE3acuReRnU",
-  authDomain: "nurtura-825b4.firebaseapp.com",
-  projectId: "nurtura-825b4",
-  storageBucket: "nurtura-825b4.firebasestorage.app",
-  messagingSenderId: "98356197107",
-  appId: "1:98356197107:web:67a54c6e76813fecb06986",
+  apiKey: "AIzaSyCQEUsWhzDnyk-cFuG4jfakvsq67VnqtL0",
+  authDomain: "nurtura-b967b.firebaseapp.com",
+  projectId: "nurtura-b967b",
+  storageBucket: "nurtura-b967b.firebasestorage.app",
+  messagingSenderId: "871389551301",
+  appId: "1:871389551301:web:b1ded72dbe665ef77e6eac"
 };
 
 // Initialize Firebase
