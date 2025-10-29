@@ -1,34 +1,70 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import "../../globals.css";
 
 const CreateAccount = () => {
-  const [email, setEmail] = useState(""); // email
-  const [isChecked, setIsChecked] = useState(false); // taga check if naka-tick si checkbox
-  const isNextButtonEnabled = email.length > 0 && isChecked; // taga-check if may laman email and if naka tick checkbox
-  const isGoogleButtonEnabled = isChecked; // taga check if pwede n buksan si google button
+  const [email, setEmail] = useState("");
+  const [isChecked, setIsChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const isNextButtonEnabled = email.length > 0 && isChecked;
+  const isGoogleButtonEnabled = isChecked;
 
   const handleCheckboxToggle = () => {
     setIsChecked(!isChecked);
   };
 
-  const handleNextPress = () => {
-    if (isNextButtonEnabled) {
-      console.log(`Email entered: ${email}`);
-      router.push("/(auth)/signup/emailOTP");
+  const handleNextPress = async () => {
+    if (!isNextButtonEnabled) return;
+
+    setLoading(true);
+
+    try {
+      const otp = Math.floor(10000 + Math.random() * 90000); 
+      const currentTime = new Date();
+      const expireTime = new Date(currentTime.getTime() + 15 * 60000); 
+      const formattedTime = expireTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const response = await fetch("http://192.168.100.193:3000/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          passcode: otp,
+          time: formattedTime,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Success", "OTP has been sent to your email.");
+        console.log("Email sent successfully:", result);
+        router.push("/(auth)/signup/emailOTP");
+      } else {
+        Alert.alert("Error", result.message || "Failed to send OTP.");
+        console.error(result.error);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      Alert.alert("Error", "Unable to send OTP. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGooglePress = () => {
     if (isGoogleButtonEnabled) {
       console.log("hello david ako si SSO");
-
-      // d2 yung SSO bai
+      // Handle Google SSO here later
     }
   };
 
-  const CHECKBOX_BG = isChecked ? "bg-primary" : "border-gray-300 border-[2px]"; // colors lang for checkbox
+  const CHECKBOX_BG = isChecked ? "bg-primary" : "border-gray-300 border-[2px]";
 
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
@@ -42,9 +78,10 @@ const CreateAccount = () => {
 
           <TextInput
             className="text-black text-[16px]"
-            defaultValue=""
             keyboardType="email-address"
+            autoCapitalize="none"
             onChangeText={setEmail}
+            value={email}
           />
         </View>
       </View>
@@ -79,9 +116,11 @@ const CreateAccount = () => {
           className={`w-full p-6 rounded-[12px] mt-2 flex items-center ${
             isNextButtonEnabled ? "bg-primary" : "bg-[#919191]"
           }`}
-          disabled={!isNextButtonEnabled}
+          disabled={!isNextButtonEnabled || loading}
         >
-          <Text className="text-white text-[16px] font-bold">Next</Text>
+          <Text className="text-white text-[16px] font-bold">
+            {loading ? "Sending..." : "Next"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
