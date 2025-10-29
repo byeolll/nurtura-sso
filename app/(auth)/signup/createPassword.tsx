@@ -33,18 +33,18 @@ const CreatePassword = () => {
 
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
-      <View className="mt-[34px] flex-1 items-center">
-        <Text className="text-black font-bold text-[24px] ml-6 pr-[100%] mb-[13px]">
+      <View className="mt-[34px] flex-1 items-start">
+        <Text className="text-black font-bold text-[24px] pr-[110px] mb-[13px] pl-2">
           Set new password
         </Text>
 
-        <Text className="ml-3 mb-[26px] text-[13px] text-gray-700 leading-normal">
+        <Text className="mb-[20px] text-[13px] text-gray-700 leading-normal pl-2">
           Enter a secure password to protect your account.
         </Text>
 
-        <View className="relative w-full mb-[20px]">
-          <View className="p-4 border-[#919191] border-[2px] rounded-[12px] bg-white">
-            <Text className="text-primary text-[13px] mb-[4px]">
+        <View className="relative w-full mb-[5px]">
+          <View className="w-[100%] pt-2 px-3 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
+            <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Set password
             </Text>
 
@@ -62,7 +62,7 @@ const CreatePassword = () => {
             onPressIn={() => setIsPasswordVisible(true)}
             onPressOut={() => setIsPasswordVisible(false)}
           >
-            <View className="absolute right-5 top-[55%] -translate-y-1/2 p-2">
+            <View className="absolute right-5 top-[50%] -translate-y-1/2 pr-2">
               <Image
                 source={
                   isPasswordVisible
@@ -77,8 +77,8 @@ const CreatePassword = () => {
         </View>
  
         <View className="relative w-full mb-[20px]">
-          <View className="p-4 border-[#919191] border-[2px] rounded-[12px] bg-white">
-            <Text className="text-primary text-[13px] mb-[4px]">
+          <View className="w-[100%] pt-2 px-3 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
+            <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Confirm password
             </Text>
 
@@ -96,7 +96,7 @@ const CreatePassword = () => {
             onPressIn={() => setIsPasswordVisible(true)}
             onPressOut={() => setIsPasswordVisible(false)}
           >
-            <View className="absolute right-5 top-[55%] -translate-y-1/2 p-2">
+            <View className="absolute right-5 top-[50%] -translate-y-1/2 pr-2">
               <Image
                 source={
                   isPasswordVisible
@@ -113,7 +113,7 @@ const CreatePassword = () => {
       <View className="w-full">
         <TouchableOpacity
           onPress={handleNextPress}
-          className={`w-full p-7 rounded-[12px] mt-2 flex items-center ${
+          className={`w-full p-6 rounded-[12px] mt-2 flex items-center ${
             isNextButtonEnabled ? "bg-primary" : "bg-[#919191]"
           }`}
           disabled={!isNextButtonEnabled}

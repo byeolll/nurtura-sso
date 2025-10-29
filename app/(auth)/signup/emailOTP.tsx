@@ -84,16 +84,16 @@ const EmailOTP = () => {
 
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
-      <View className="mt-[34px] flex-1 items-center">
-        <Text className="text-black font-bold text-[24px] ml-6 pr-[100%] mb-[13px]">
+      <View className="mt-[34px] flex-1 items-start">
+        <Text className="text-black font-bold text-[24px] pl-2 mb-[13px]">
           Enter one-time code
         </Text>
 
-        <Text className="ml-3 mb-[26px] text-[13px] text-gray-700 leading-normal">
+        <Text className="pl-2 mb-[20px] text-[13px] text-gray-700 leading-normal">
           Enter the 5 digit code that was sent to your email address.
         </Text>
 
-        <View className="flex-row justify-between w-[95%] self-center mb-[26px]">
+        <View className="flex-row justify-between w-[100%] self-center mb-[26px]">
           {otp.map((value, index) => (
             <TextInput
               key={index}
@@ -112,7 +112,7 @@ const EmailOTP = () => {
           ))}
         </View>
 
-        <View className="self-start ml-3 mb-[26px] flex-row items-center">
+        <View className="self-start pl-2 mb-[26px] flex-row items-center">
           <Text className="text-[13px] text-gray-700 leading-normal">
             Didn't receive the code?{" "}
           </Text>
@@ -138,7 +138,7 @@ const EmailOTP = () => {
       <View className="w-full">
         <TouchableOpacity
           onPress={handleNextPress}
-          className={`w-full p-7 rounded-[12px] mt-2 flex items-center ${
+          className={`w-full p-6 rounded-[12px] mt-2 flex items-center ${
             allFilled ? "bg-primary" : "bg-[#919191]"
           }`}
           disabled={!allFilled}
