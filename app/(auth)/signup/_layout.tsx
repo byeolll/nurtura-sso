@@ -1,4 +1,6 @@
 import { Stack } from 'expo-router';
+import { Image } from 'react-native';
+import '../../globals.css'
 
 export default function SignupLayout() {
   return (
@@ -12,22 +14,30 @@ export default function SignupLayout() {
       }}
     >
       <Stack.Screen 
-        name="createAccount" // Corresponds to getEmail.tsx
+        name="createAccount" 
         options={{ 
-          headerTitle: 'Step 1 of 3: Enter Email', 
-          headerShown: true 
+          headerTitle: () => (
+            <Image source={require('@/assets/images/progress1.png')} />
+          ), 
+          headerShown: true, 
         }} 
       />
       <Stack.Screen 
         name="emailOTP" 
         options={{ 
-          headerTitle: 'Step 2 of 3: Enter OTP',
+          headerTitle: () => (
+            <Image source={require('@/assets/images/progress2.png')} />
+          ), 
+          headerShown: true, 
         }} 
       />
       <Stack.Screen 
         name="createPassword" 
         options={{ 
-          headerTitle: 'Step e of 3: Create your password',
+          headerTitle: () => (
+            <Image source={require('@/assets/images/progress3.png')} />
+          ), 
+          headerShown: true, 
         }} 
       />
       

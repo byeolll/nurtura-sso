@@ -5,29 +5,29 @@ import { View, ActivityIndicator } from 'react-native';
 import './globals.css'
 
 function RootLayoutNav() {
-  const { user, loading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
+  // const { user, loading } = useAuth();
+  // const segments = useSegments();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (loading) return;
+  // useEffect(() => {
+  //   if (loading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+  //   const inAuthGroup = segments[0] === '(auth)';
 
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      router.replace('/(tabs)/profile');
-    }
-  }, [user, loading, segments]);
+  //   if (!user && !inAuthGroup) {
+  //     router.replace('/(auth)/login');
+  //   } else if (user && inAuthGroup) {
+  //     router.replace('/(tabs)/profile');
+  //   }
+  // }, [user, loading, segments]);
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#3b82f6" />
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 items-center justify-center bg-white">
+  //       <ActivityIndicator size="large" color="#3b82f6" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

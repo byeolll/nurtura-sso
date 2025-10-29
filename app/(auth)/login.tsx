@@ -78,17 +78,17 @@ export default function LoginScreen() {
 
         </View>
 
-        <Text>
+        {/* <Text>
           Forgot password?{' '}
           <Text className="text-primary underline font-bold">
             Reset Here.
           </Text>
-        </Text>
+        </Text> */}
       </View>
 
       <View className='absolute bottom-10 w-full'>
         <TouchableOpacity
-          onPress={() => router.push('/notSignup')}
+          onPress={() => navigation.navigate('signup' as never)}
           className="mt-4 mb-5"
           disabled={loading}
         >
