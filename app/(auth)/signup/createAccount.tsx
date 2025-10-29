@@ -15,6 +15,7 @@ const CreateAccount = () => {
 
   const handleNextPress = () => {
     if (isNextButtonEnabled) {
+      console.log(`📧 Email entered: ${email}`);
       router.push("/(auth)/signup/emailOTP");
     }
   };
@@ -36,7 +37,7 @@ const CreateAccount = () => {
           Create your account
         </Text>
 
-        <View className="w-[95%] p-4 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
+        <View className="w-[100%] p-4 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
           <Text className="text-primary text-[13px] mb-[4px]">Email</Text>
 
           <TextInput

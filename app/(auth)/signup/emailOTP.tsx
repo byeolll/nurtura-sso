@@ -118,7 +118,7 @@ const EmailOTP = () => {
           </Text>
           <TouchableOpacity
             onPress={handleResendPress}
-            disabled={timer > 0} // disable button while timer active
+            disabled={timer > 0} 
           >
             <Text
               className={`text-[13px] font-semibold underline ${
@@ -129,7 +129,6 @@ const EmailOTP = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* timer display */}
           {timer > 0 && (
             <Text className="ml-2 text-[13px] text-gray-500">({timer}s)</Text>
           )}
