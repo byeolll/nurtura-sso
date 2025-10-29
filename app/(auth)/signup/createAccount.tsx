@@ -30,9 +30,9 @@ const CreateAccount = () => {
   const CHECKBOX_BG = isChecked ? "bg-primary" : "border-gray-300 border-[2px]"; // colors lang for checkbox
 
   return (
-    <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between">
+    <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-center">
-        <Text className="text-black font-bold text-[24px] ml-[12px] mr-[119px] mb-[20px]">
+        <Text className="text-black font-bold text-[24px] ml-6 pr-[100%] mb-[20px]">
           Create your account
         </Text>
 
@@ -47,7 +47,7 @@ const CreateAccount = () => {
           />
         </View>
 
-        <View className="flex-row items-center my-6 mb-[20px]">
+        <View className="flex-row items-center my-6 mb-[25px]">
           <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />
           <Text className="text-black text-[13px]">or</Text>
           <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />
@@ -84,7 +84,7 @@ const CreateAccount = () => {
             </View>
           </TouchableOpacity>
 
-          <Text className="ml-3 text-[13px] text-gray-700 leading-tight">
+          <Text className="ml-3 text-[13px] text-gray-700 leading-normal">
             By continuing, I agree with Nurtura's{" "}
             <Text className="text-[13px] font-semibold text-primary">
               Terms of Service
