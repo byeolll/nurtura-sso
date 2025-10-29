@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
   Text,
@@ -27,12 +27,12 @@ const EmailOTP = () => {
   };
 
   // checker if all inputs ay filled
-  const allFilled = otp.every((v) => v !== "");  
+  const allFilled = otp.every((v) => v !== "");
 
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
   const handleNextPress = () => {
     const code = otp.join("");
-    console.log("Entered OTP:", code);  
+    console.log("Entered OTP:", code);
     router.push("/(auth)/signup/createPassword");
   };
 
@@ -43,7 +43,6 @@ const EmailOTP = () => {
   ) => {
     if (e.nativeEvent.key === "Backspace") {
       if (otp[index] === "" && index > 0) {
-         
         const newOtp = [...otp];
         newOtp[index - 1] = "";
         setOtp(newOtp);
@@ -53,16 +52,34 @@ const EmailOTP = () => {
   };
 
   // para mag focus sa first empty input
-  const handleFocus = () => {   
+  const handleFocus = () => {
     const firstEmpty = otp.findIndex((v) => v === "");
     if (firstEmpty !== -1) {
       inputs.current[firstEmpty]?.focus();
     }
   };
 
+  const [timer, setTimer] = useState(0); // in seconds
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
+
   // pwede dito ipasok yung mangyayari once nag click ng resend
   const handleResendPress = () => {
-    console.log("Resend clicked"); 
+    if (timer === 0) {
+      console.log("Resend clicked");
+      setTimer(30); // start 30s cooldown
+    }
   };
 
   return (
@@ -95,15 +112,27 @@ const EmailOTP = () => {
           ))}
         </View>
 
-        <View className="self-start ml-3 mb-[26px] flex-row">
+        <View className="self-start ml-3 mb-[26px] flex-row items-center">
           <Text className="text-[13px] text-gray-700 leading-normal">
             Didn't receive the code?{" "}
           </Text>
-          <TouchableOpacity onPress={handleResendPress}>
-            <Text className="text-primary text-[13px] font-semibold underline">
+          <TouchableOpacity
+            onPress={handleResendPress}
+            disabled={timer > 0} // disable button while timer active
+          >
+            <Text
+              className={`text-[13px] font-semibold underline ${
+                timer > 0 ? "text-gray-400" : "text-primary"
+              }`}
+            >
               Resend code
             </Text>
           </TouchableOpacity>
+
+          {/* timer display */}
+          {timer > 0 && (
+            <Text className="ml-2 text-[13px] text-gray-500">({timer}s)</Text>
+          )}
         </View>
       </View>
 
