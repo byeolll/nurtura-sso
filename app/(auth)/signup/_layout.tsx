@@ -1,12 +1,12 @@
 import { Stack } from 'expo-router';
 import { Image } from 'react-native';
-import '../../globals.css'
+import '../../globals.css';
 
 export default function SignupLayout() {
   return (
     <Stack 
       screenOptions={{ 
-        headerStyle: { backgroundColor: '#ffffff' },
+        headerStyle: { backgroundColor: '#fafafa' },
         headerBlurEffect: 'light',
         headerBackTitle: 'Back',
         headerShadowVisible: false,
