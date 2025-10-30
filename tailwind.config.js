@@ -12,10 +12,14 @@ module.exports = {
         background: "#3D405B",
         grayText: "#919191",
         white: "#FAFAFA",
-        black: "#424242"
+        black: "#424242",
       },
-      boxShadow: { 
-        'sm-subtle': '0px 1.5px 5px rgba(0,0,0,0.25)',
+      boxShadow: {
+        // existing shadow
+        "sm-subtle": "0px 1.5px 5px rgba(0,0,0,0.25)",
+
+        // new custom shadow you asked for
+        soft: "0px 1px 2px rgba(0,0,0,0.1)", // 👈 your new one
       },
     },
   },

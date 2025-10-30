@@ -7,7 +7,7 @@ import {
   TextInput,
   TextInputKeyPressEventData,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import "../../globals.css";
 
@@ -18,6 +18,8 @@ const EmailOTP = () => {
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
   const { email } = useLocalSearchParams();
+
+  const [isOtpInvalid, setIsOtpInvalid] = useState(false); // for styling if otp is invalid hihiz
 
   // input function, para auto next once mag type ng number
   const handleChange = (text: string, index: number) => {
@@ -38,8 +40,8 @@ const EmailOTP = () => {
   const handleNextPress = async () => {
     const code = otp.join("");
 
-      try {
-        const response = await fetch("http://${LOCAL_IP}:${PORT}/verify-otp", {
+    try {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
@@ -50,13 +52,13 @@ const EmailOTP = () => {
       if (response.ok) {
         console.log("OTP Verified");
         router.push({
-            pathname: "/(auth)/signup/createPassword",
-            params: { email },
+          pathname: "/(auth)/signup/createPassword",
+          params: { email },
         });
       } else {
-        alert(result.message || "Invalid OTP");
+        setIsOtpInvalid(true);
+        console.log("Invalid OTP");
       }
-
     } catch (error) {
       console.log("Error verifying OTP:", error);
       alert("Network error. Try again.");
@@ -107,15 +109,15 @@ const EmailOTP = () => {
       console.log("Resend clicked");
       setTimer(30); // start 30s cooldown
 
-      try{
-        const otp = Math.floor(10000 + Math.random() * 90000); 
+      try {
+        const otp = Math.floor(10000 + Math.random() * 90000);
         const currentTime = new Date();
-        const expireTime = new Date(currentTime.getTime() + 15 * 60000); 
+        const expireTime = new Date(currentTime.getTime() + 15 * 60000);
         const formattedTime = expireTime.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         });
-  
+
         const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -125,7 +127,7 @@ const EmailOTP = () => {
             time: formattedTime,
           }),
         });
-  
+
         console.log("OTP resent");
       } catch (error) {
         console.error("Error sending OTP:", error);
@@ -146,7 +148,7 @@ const EmailOTP = () => {
           <Text className="text-primary font-bold">{email}</Text>
         </Text>
 
-        <View className="flex-row justify-between w-[100%] self-center mb-[26px]">
+        <View className="flex-row justify-between w-[100%] self-center mb-[10px]">
           {otp.map((value, index) => (
             <TextInput
               key={index}
@@ -159,20 +161,24 @@ const EmailOTP = () => {
               onFocus={handleFocus}
               keyboardType="number-pad"
               maxLength={1}
-              className="h-[60px] w-[60px] border-grayText border-[2px] rounded-[12px] text-black text-center text-[18px] font-bold"
+              className={`h-[60px] w-[60px] border-[2px] rounded-[12px] text-black text-center text-[18px] font-bold ${
+                isOtpInvalid ? "border-[#E65656]" : "border-grayText"
+              }`}
               returnKeyType="next"
             />
           ))}
         </View>
+        {isOtpInvalid && (
+          <Text className="text-[#E65656] text-[13px] mb-[26px] pl-2">
+            Invalid OTP. Please try again.
+          </Text>
+        )}
 
         <View className="self-start pl-2 mb-[26px] flex-row items-center">
           <Text className="text-[13px] text-gray-700 leading-normal">
             Didn't receive the code?{" "}
           </Text>
-          <TouchableOpacity
-            onPress={handleResendPress}
-            disabled={timer > 0} 
-          >
+          <TouchableOpacity onPress={handleResendPress} disabled={timer > 0}>
             <Text
               className={`text-[13px] font-semibold underline ${
                 timer > 0 ? "text-gray-400" : "text-primary"

@@ -71,13 +71,12 @@ const CreatePassword = () => {
 
   // togge lang
   const togglePasswordVisibility = () => {
-  if (isPasswordVisible) {
-    setIsPasswordVisible(false);
-  } else {
-    setIsPasswordVisible(true);
-  }
-};
-
+    if (isPasswordVisible) {
+      setIsPasswordVisible(false);
+    } else {
+      setIsPasswordVisible(true);
+    }
+  };
 
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
@@ -89,9 +88,17 @@ const CreatePassword = () => {
         <Text className="mb-[20px] text-[13px] text-gray-700 leading-normal pl-2">
           Enter a secure password to protect your account.
         </Text>
- 
+
         <View className="relative w-full mb-[5px]">
-          <View className="w-[100%] pt-2 px-3 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
+          <View
+            className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[6px] ${
+              password.length === 0
+                ? "border-[#919191]"
+                : isPasswordValid
+                  ? "border-[#4CAF50]" 
+                  : "border-[#E65656]" 
+            }`}
+          >
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Set password
             </Text>
@@ -102,10 +109,16 @@ const CreatePassword = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={(text) => setPassword(text)} 
+              onChangeText={(text) => setPassword(text)}
             />
           </View>
  
+          {!isPasswordValid && password.length > 0 && (
+            <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+              Password must have 8+ chars, uppercase, number & symbol.
+            </Text>
+          )}
+
           <TouchableWithoutFeedback onPress={togglePasswordVisibility}>
             <View className="absolute right-5 top-[50%] -translate-y-1/2 pr-2">
               <Image
@@ -120,9 +133,19 @@ const CreatePassword = () => {
             </View>
           </TouchableWithoutFeedback>
         </View>
- 
+
         <View className="relative w-full mb-[20px]">
-          <View className="w-[100%] pt-2 px-3 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
+          <View
+            className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[6px] ${
+              confirmPassword.length === 0
+                ? "border-[#919191]"
+                : !passwordsMatch
+                  ? "border-[#E65656]"
+                  : isConfirmPasswordValid
+                    ? "border-[#4CAF50]"
+                    : "border-[#E65656]"
+            }`}
+          >
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Confirm password
             </Text>
@@ -133,10 +156,25 @@ const CreatePassword = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={confirmPassword}
-              onChangeText={(text) => setConfirmPassword(text)} 
+              onChangeText={(text) => setConfirmPassword(text)}
             />
           </View>
- 
+
+          {/* ⚠️ Confirm password error messages */}
+          {!passwordsMatch && confirmPassword.length > 0 && (
+            <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+              Passwords do not match.
+            </Text>
+          )}
+
+          {!isConfirmPasswordValid &&
+            confirmPassword.length > 0 &&
+            passwordsMatch && (
+              <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+                Password must have 8+ chars, uppercase, number & symbol.
+              </Text>
+            )}
+
           <TouchableWithoutFeedback onPress={togglePasswordVisibility}>
             <View className="absolute right-5 top-[50%] -translate-y-1/2 pr-2">
               <Image
