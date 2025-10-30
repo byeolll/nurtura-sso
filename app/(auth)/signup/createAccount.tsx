@@ -4,11 +4,32 @@ import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import "../../globals.css";
 
 const CreateAccount = () => {
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;  
+
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
-  const isNextButtonEnabled = email.length > 0 && isChecked;
+   const validateEmail = (value: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regex.test(value)) {
+      setEmailError("Please enter a valid email address.");
+      setIsEmailValid(false);
+    } else {
+      setEmailError("");
+      setIsEmailValid(true);
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    validateEmail(value);
+  };
+
+  const isNextButtonEnabled = email.length > 0 && isEmailValid && isChecked;
   const isGoogleButtonEnabled = isChecked;
 
   const handleCheckboxToggle = () => {
@@ -29,7 +50,7 @@ const CreateAccount = () => {
         minute: "2-digit",
       });
 
-      const response = await fetch("http://192.168.100.193:3000/send-otp", {
+      const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -44,7 +65,10 @@ const CreateAccount = () => {
       if (response.ok) {
         Alert.alert("Success", "OTP has been sent to your email.");
         console.log("Email sent successfully:", result);
-        router.push("/(auth)/signup/emailOTP");
+        router.push({
+            pathname: "/(auth)/signup/emailOTP",
+            params: { email },
+        });
       } else {
         Alert.alert("Error", result.message || "Failed to send OTP.");
         console.error(result.error);
@@ -80,10 +104,17 @@ const CreateAccount = () => {
             className="text-black text-[16px]"
             keyboardType="email-address"
             autoCapitalize="none"
-            onChangeText={setEmail}
+            onChangeText={handleEmailChange}
             value={email}
           />
         </View>
+
+        {/* Pakilagyan na lang to ng styling */}
+        {emailError.length > 0 && (
+          <Text className="text-red-500 text-[12px] mt-1 pl-2">
+            {emailError}
+          </Text>
+        )}
       </View>
 
       <View className="w-full">
