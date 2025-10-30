@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -10,26 +10,74 @@ import {
 } from "react-native";
 
 const CreatePassword = () => {
+  // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  // para sa password inputs
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // enable next button kapag may more than 8 char na yung dalawang input box
+  // password validation
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(false);
+
+  // pang-enable lang sa Next button
   const isNextButtonEnabled =
-    password.length >= 8 && confirmPassword.length >= 8;
+    isPasswordValid && isConfirmPasswordValid && passwordsMatch;
 
+  // regex para sa password
+  const isStrongPassword = (password: string) => {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    const isLongEnough = password.length >= 8;
+    return hasUpperCase && hasSymbol && hasDigit && isLongEnough;
+  };
 
-  // next button 
-  const handleNextPress = () => {
-    if (password === confirmPassword) {
-      console.log(`Passwords match: ${password}`);
-    } else {
-      Alert.alert("Password doesn't match", "Please check your inputs again.");
+  // real-time validation
+  useEffect(() => {
+    if (password.length > 0) {
+      const valid = isStrongPassword(password);
+      setIsPasswordValid(valid);
       console.log(
-        `Passwords don't match: first input = ${password}, second = ${confirmPassword}`
+        valid ? "Set password is valid." : "Set password is not valid."
       );
     }
+
+    if (confirmPassword.length > 0) {
+      const valid = isStrongPassword(confirmPassword);
+      setIsConfirmPasswordValid(valid);
+      console.log(
+        valid ? "Confirm password is valid." : "Confirm password is not valid."
+      );
+    }
+
+    if (password && confirmPassword) {
+      const match = password === confirmPassword;
+      setPasswordsMatch(match);
+      console.log(match ? "Passwords match." : "Passwords do not match.");
+    }
+  }, [password, confirmPassword]);
+
+  // sa next press lang
+  const handleNextPress = () => {
+    if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
+      console.log(`Passwords match and are valid: ${password}`);
+    } else {
+      Alert.alert("Invalid Password", "Please check your inputs again.");
+    }
   };
+
+  // togge lang
+  const togglePasswordVisibility = () => {
+  if (isPasswordVisible) {
+    setIsPasswordVisible(false);
+  } else {
+    setIsPasswordVisible(true);
+  }
+};
+
 
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
@@ -41,7 +89,7 @@ const CreatePassword = () => {
         <Text className="mb-[20px] text-[13px] text-gray-700 leading-normal pl-2">
           Enter a secure password to protect your account.
         </Text>
-
+ 
         <View className="relative w-full mb-[5px]">
           <View className="w-[100%] pt-2 px-3 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
@@ -54,14 +102,11 @@ const CreatePassword = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => setPassword(text)} 
             />
           </View>
  
-          <TouchableWithoutFeedback
-            onPressIn={() => setIsPasswordVisible(true)}
-            onPressOut={() => setIsPasswordVisible(false)}
-          >
+          <TouchableWithoutFeedback onPress={togglePasswordVisibility}>
             <View className="absolute right-5 top-[50%] -translate-y-1/2 pr-2">
               <Image
                 source={
@@ -88,14 +133,11 @@ const CreatePassword = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(text) => setConfirmPassword(text)} 
             />
           </View>
  
-          <TouchableWithoutFeedback
-            onPressIn={() => setIsPasswordVisible(true)}
-            onPressOut={() => setIsPasswordVisible(false)}
-          >
+          <TouchableWithoutFeedback onPress={togglePasswordVisibility}>
             <View className="absolute right-5 top-[50%] -translate-y-1/2 pr-2">
               <Image
                 source={
@@ -110,6 +152,7 @@ const CreatePassword = () => {
           </TouchableWithoutFeedback>
         </View>
       </View>
+
       <View className="w-full">
         <TouchableOpacity
           onPress={handleNextPress}
