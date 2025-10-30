@@ -6,9 +6,27 @@ import "../../globals.css";
 const CreateAccount = () => {
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
-  const isNextButtonEnabled = email.length > 0 && isChecked;
+   const validateEmail = (value: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regex.test(value)) {
+      setEmailError("Please enter a valid email address.");
+      setIsEmailValid(false);
+    } else {
+      setEmailError("");
+      setIsEmailValid(true);
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    validateEmail(value);
+  };
+
+  const isNextButtonEnabled = email.length > 0 && isEmailValid && isChecked;
   const isGoogleButtonEnabled = isChecked;
 
   const handleCheckboxToggle = () => {
@@ -80,10 +98,17 @@ const CreateAccount = () => {
             className="text-black text-[16px]"
             keyboardType="email-address"
             autoCapitalize="none"
-            onChangeText={setEmail}
+            onChangeText={handleEmailChange}
             value={email}
           />
         </View>
+
+        {/* Pakilagyan na lang to ng styling */}
+        {emailError.length > 0 && (
+          <Text className="text-red-500 text-[12px] mt-1 pl-2">
+            {emailError}
+          </Text>
+        )}
       </View>
 
       <View className="w-full">
