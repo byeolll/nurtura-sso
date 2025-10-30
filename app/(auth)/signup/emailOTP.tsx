@@ -12,6 +12,9 @@ import {
 import "../../globals.css";
 
 const EmailOTP = () => {
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;
+
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
   const { email } = useLocalSearchParams();
@@ -36,7 +39,7 @@ const EmailOTP = () => {
     const code = otp.join("");
 
       try {
-        const response = await fetch("http://192.168.100.2:3000/verify-otp", {
+        const response = await fetch("http://${LOCAL_IP}:${PORT}/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
@@ -113,7 +116,7 @@ const EmailOTP = () => {
           minute: "2-digit",
         });
   
-        const response = await fetch("http://192.168.100.2:3000/send-otp", {
+        const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

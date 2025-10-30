@@ -4,6 +4,9 @@ import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import "../../globals.css";
 
 const CreateAccount = () => {
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;  
+
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
@@ -47,7 +50,7 @@ const CreateAccount = () => {
         minute: "2-digit",
       });
 
-      const response = await fetch("http://192.168.100.2:3000/send-otp", {
+      const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
