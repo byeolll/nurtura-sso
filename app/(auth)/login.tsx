@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { router, useNavigation } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -11,6 +11,8 @@ import {
   View,
 } from "react-native";
 import "../globals.css";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { signInWithGoogleCredential } from "../../firebase";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -23,6 +25,19 @@ export default function LoginScreen() {
   const [password, setPassword] = useState(""); // nilagay q to for hold password visibility toggle
 
   const [isLoginInvalid, setIsLoginInvalid] = useState(false); // for invalid login handling lang
+
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
+  
+
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "871389551301-8d4an920eclthuah35lobfiqum80bnri.apps.googleusercontent.com",
+      offlineAccess: true,
+      forceCodeForRefreshToken: true,
+    });
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -44,9 +59,34 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGooglePress = () => {
-    console.log("hello david ako si SSO");
-    // d2 yung SSO bai
+    const handleGooglePress = async () => {
+      try {
+        await GoogleSignin.signOut();
+        await GoogleSignin.hasPlayServices();
+        const result = await GoogleSignin.signIn();
+
+        console.log("GOOGLE SIGNIN RESULT:", result);
+
+        const idToken = result.data?.idToken;
+
+        if (!idToken) {
+          throw new Error("No ID token returned from Google");
+        }
+
+        await signInWithGoogleCredential(idToken);
+
+        console.log("Firebase login success");
+        router.replace("/(tabs)");
+      } catch (error) {
+        console.log("Google Sign-In Error:", error);
+      }
+    };
+
+
+  const logout = async () => {
+    setUserInfo(null);
+    await GoogleSignin.revokeAccess();
+    await GoogleSignin.signOut();
   };
 
   return (

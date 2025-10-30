@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { initializeAuth, getReactNativePersistence, GoogleAuthProvider } from "firebase/auth";
+import { initializeApp, getApp, getApps } from "firebase/app";
+import { initializeAuth, getReactNativePersistence, GoogleAuthProvider, signInWithCredential, getAuth, Auth } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -18,8 +18,22 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig);
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+let auth: Auth;
+try {
+  auth = getAuth(app);
+} catch (e) {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+}
+
 export const googleProvider = new GoogleAuthProvider();
+
+export function signInWithGoogleCredential(idToken: string) {
+  const credential = GoogleAuthProvider.credential(idToken);
+  return signInWithCredential(auth, credential);
+}
+
+export { app, auth };
