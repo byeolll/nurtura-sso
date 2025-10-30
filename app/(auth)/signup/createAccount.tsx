@@ -1,11 +1,18 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import "../../globals.css";
 
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
-  const PORT = process.env.EXPO_PUBLIC_PORT;  
+  const PORT = process.env.EXPO_PUBLIC_PORT;
 
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
@@ -13,7 +20,7 @@ const CreateAccount = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
 
-   const validateEmail = (value: string) => {
+  const validateEmail = (value: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regex.test(value)) {
       setEmailError("Please enter a valid email address.");
@@ -42,15 +49,19 @@ const CreateAccount = () => {
     setLoading(true);
 
     try {
-      const otp = Math.floor(10000 + Math.random() * 90000); 
+      const otp = Math.floor(10000 + Math.random() * 90000);
       const currentTime = new Date();
-      const expireTime = new Date(currentTime.getTime() + 15 * 60000); 
+      const expireTime = new Date(currentTime.getTime() + 15 * 60000);
       const formattedTime = expireTime.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
 
-      const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
+      const EMAIL_BORDER_COLOR = emailError
+        ? "border-red-500"
+        : "border-[#919191]";
+
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -66,8 +77,8 @@ const CreateAccount = () => {
         Alert.alert("Success", "OTP has been sent to your email.");
         console.log("Email sent successfully:", result);
         router.push({
-            pathname: "/(auth)/signup/emailOTP",
-            params: { email },
+          pathname: "/(auth)/signup/emailOTP",
+          params: { email },
         });
       } else {
         Alert.alert("Error", result.message || "Failed to send OTP.");
@@ -97,8 +108,14 @@ const CreateAccount = () => {
           Create your account
         </Text>
 
-        <View className="w-[100%] pt-2 px-3 border-[#919191] border-[2px] rounded-[12px] bg-white mb-[10px]">
-          <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">Email</Text>
+        <View
+          className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
+            emailError ? "border-[#ef8d8d]" : "border-[#919191]"
+          }`}
+        >
+          <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+            Email
+          </Text>
 
           <TextInput
             className="text-black text-[16px]"
@@ -109,12 +126,52 @@ const CreateAccount = () => {
           />
         </View>
 
-        {/* Pakilagyan na lang to ng styling */}
+        {/* 🔹 Error message */}
         {emailError.length > 0 && (
-          <Text className="text-red-500 text-[12px] mt-1 pl-2">
+          <Text className="text-[#E65656] text-[13px] mt-1 pl-2">
             {emailError}
           </Text>
         )}
+
+        <View className="flex-row items-center my-6 mb-[25px] w-full">
+          <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />
+          <Text className="text-black text-[13px]">or</Text>
+          <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />
+        </View>
+
+        <TouchableOpacity
+          style={[
+            {
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 24,
+              borderRadius: 12,
+              width: "100%",
+              backgroundColor: isChecked ? "#fafafa" : "#ececec",
+              opacity: isChecked ? 1 : 0.6,
+              ...(isChecked
+                ? {
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 2,
+                    elevation: 2, 
+                  }
+                : {}),
+            },
+          ]}
+          onPress={handleGooglePress}
+        >
+          <Image
+            source={require("@/assets/images/google.png")}
+            className="w-5 h-5 mr-3"
+            resizeMode="contain"
+          />
+          <Text className={"text-[16px] font-semibold text-black"}>
+            Continue with Google
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View className="w-full">
