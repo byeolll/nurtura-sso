@@ -1,18 +1,20 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   NativeSyntheticEvent,
   Text,
   TextInput,
   TextInputKeyPressEventData,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import "../../globals.css";
 
 const EmailOTP = () => {
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
+  const { email } = useLocalSearchParams();
 
   // input function, para auto next once mag type ng number
   const handleChange = (text: string, index: number) => {
@@ -30,10 +32,32 @@ const EmailOTP = () => {
   const allFilled = otp.every((v) => v !== "");
 
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
-  const handleNextPress = () => {
+  const handleNextPress = async () => {
     const code = otp.join("");
-    console.log("Entered OTP:", code);
-    router.push("/(auth)/signup/createPassword");
+
+      try {
+        const response = await fetch("http://192.168.100.2:3000/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("OTP Verified");
+        router.push({
+            pathname: "/(auth)/signup/createPassword",
+            params: { email },
+        });
+      } else {
+        alert(result.message || "Invalid OTP");
+      }
+
+    } catch (error) {
+      console.log("Error verifying OTP:", error);
+      alert("Network error. Try again.");
+    }
   };
 
   // para mag backspace sa input
@@ -75,10 +99,35 @@ const EmailOTP = () => {
   }, [timer]);
 
   // pwede dito ipasok yung mangyayari once nag click ng resend
-  const handleResendPress = () => {
+  const handleResendPress = async () => {
     if (timer === 0) {
       console.log("Resend clicked");
       setTimer(30); // start 30s cooldown
+
+      try{
+        const otp = Math.floor(10000 + Math.random() * 90000); 
+        const currentTime = new Date();
+        const expireTime = new Date(currentTime.getTime() + 15 * 60000); 
+        const formattedTime = expireTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+  
+        const response = await fetch("http://192.168.100.2:3000/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            passcode: otp,
+            time: formattedTime,
+          }),
+        });
+  
+        console.log("OTP resent");
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        Alert.alert("Error", "Unable to send OTP. Please try again later.");
+      }
     }
   };
 
@@ -90,7 +139,8 @@ const EmailOTP = () => {
         </Text>
 
         <Text className="pl-2 mb-[20px] text-[13px] text-gray-700 leading-normal">
-          Enter the 5 digit code that was sent to your email address.
+          Enter the 5 digit code that was sent to your email address: {""}
+          <Text className="text-primary font-bold">{email}</Text>
         </Text>
 
         <View className="flex-row justify-between w-[100%] self-center mb-[26px]">

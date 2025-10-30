@@ -47,7 +47,7 @@ const CreateAccount = () => {
         minute: "2-digit",
       });
 
-      const response = await fetch("http://192.168.100.193:3000/send-otp", {
+      const response = await fetch("http://192.168.100.2:3000/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,7 +62,10 @@ const CreateAccount = () => {
       if (response.ok) {
         Alert.alert("Success", "OTP has been sent to your email.");
         console.log("Email sent successfully:", result);
-        router.push("/(auth)/signup/emailOTP");
+        router.push({
+            pathname: "/(auth)/signup/emailOTP",
+            params: { email },
+        });
       } else {
         Alert.alert("Error", result.message || "Failed to send OTP.");
         console.error(result.error);
