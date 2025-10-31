@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -10,9 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import "../globals.css";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { signInWithGoogleCredential } from "../../firebase";
+import "../globals.css";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -89,6 +89,10 @@ export default function LoginScreen() {
     await GoogleSignin.signOut();
   };
 
+  const handleForgotPassword = () => {
+    router.push("/(auth)/forgotPassword1")
+  }
+
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen items-center">
       <Image
@@ -155,6 +159,13 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
           </TouchableOpacity>
+
+          <Text className="ml-2">
+          Forgot password?{' '}
+          <TouchableOpacity onPress={handleForgotPassword}>
+            <Text className="text-primary underline font-bold">Reset here.</Text>
+          </TouchableOpacity>
+        </Text>
         </View>
 
         <View className="flex-row items-center my-6 mb-[25px] w-full">
@@ -184,12 +195,7 @@ export default function LoginScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* <Text>
-          Forgot password?{' '}
-          <Text className="text-primary underline font-bold">
-            Reset Here.
-          </Text>
-        </Text> */}
+        
       </View>
 
       <View className="absolute bottom-10 w-full">

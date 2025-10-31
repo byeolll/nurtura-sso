@@ -17,7 +17,7 @@ export default function SignupLayout() {
         name="createAccount" 
         options={{ 
           headerTitle: () => (
-            <Image source={require('@/assets/images/progress1.png')} />
+            <Image source={require('@/assets/images/signupProgress1.png')} />
           ), 
           headerShown: true, 
         }} 
@@ -26,7 +26,7 @@ export default function SignupLayout() {
         name="emailOTP" 
         options={{ 
           headerTitle: () => (
-            <Image source={require('@/assets/images/progress2.png')} />
+            <Image source={require('@/assets/images/signupProgress2.png')} />
           ), 
           headerShown: true, 
         }} 
@@ -35,7 +35,16 @@ export default function SignupLayout() {
         name="createPassword" 
         options={{ 
           headerTitle: () => (
-            <Image source={require('@/assets/images/progress3.png')} />
+            <Image source={require('@/assets/images/signupProgress3.png')} />
+          ), 
+          headerShown: true, 
+        }} 
+      />
+      <Stack.Screen 
+        name="createUserInfo" 
+        options={{ 
+          headerTitle: () => (
+            <Image source={require('@/assets/images/signupProgress4.png')} />
           ), 
           headerShown: true, 
         }} 
