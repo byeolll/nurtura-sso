@@ -64,7 +64,6 @@ const CreateAccount = () => {
         : "border-[#919191]";
 
       console.log("🔹 Fetching from:", `http://${LOCAL_IP}:${PORT}/send-otp`);
-  
 
       const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
         method: "POST",
@@ -100,28 +99,27 @@ const CreateAccount = () => {
   const handleGooglePress = async () => {
     if (!isGoogleButtonEnabled) return;
 
-  try {
-    await GoogleSignin.signOut();
+    try {
+      await GoogleSignin.signOut();
 
-    const result = await GoogleSignin.signIn();
+      const result = await GoogleSignin.signIn();
 
-    console.log("GOOGLE SIGNIN RESULT:", result);
+      console.log("GOOGLE SIGNIN RESULT:", result);
 
-    const idToken = result.data?.idToken;
-    if (!idToken) {
-      throw new Error("No ID token returned from Google");
+      const idToken = result.data?.idToken;
+      if (!idToken) {
+        throw new Error("No ID token returned from Google");
+      }
+
+      const firebaseResult = await signInWithGoogleCredential(idToken);
+
+      console.log("Firebase login success", firebaseResult.user);
+
+      router.replace("../(tabs)");
+    } catch (error: any) {
+      console.log("Google Sign-In Error:", error);
+      Alert.alert("Google Sign-In Failed", error.message);
     }
-
-    const firebaseResult = await signInWithGoogleCredential(idToken);
-
-    console.log("Firebase login success", firebaseResult.user);
-
-    router.replace("../(tabs)"); 
-
-  } catch (error: any) {
-    console.log("Google Sign-In Error:", error);
-    Alert.alert("Google Sign-In Failed", error.message);
-  }
   };
 
   const CHECKBOX_BG = isChecked ? "bg-primary" : "border-gray-300 border-[2px]";
@@ -181,7 +179,7 @@ const CreateAccount = () => {
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.1,
                     shadowRadius: 2,
-                    elevation: 2, 
+                    elevation: 2,
                   }
                 : {}),
             },
@@ -200,7 +198,7 @@ const CreateAccount = () => {
       </View>
 
       <View className="w-full">
-        <View className="flex-row items-center justify-center px-4 my-4">
+        <View className="flex-row items-start justify-start px-4 my-4">
           <TouchableOpacity onPress={handleCheckboxToggle}>
             <View
               className={`mx-2 w-6 h-6 rounded-md items-center justify-center ${CHECKBOX_BG}`}
@@ -211,17 +209,34 @@ const CreateAccount = () => {
             </View>
           </TouchableOpacity>
 
-          <Text className="ml-3 text-[13px] text-black leading-normal">
-            By continuing, I agree with Nurtura's{" "}
-            <Text className="text-[13px] font-semibold text-primary">
-              Terms of Service
-            </Text>{" "}
-            and acknowledge Nurtura's{" "}
-            <Text className="text-[13px] font-semibold text-primary">
-              Privacy Policy
+          <View className="flex-1 flex-row flex-wrap ml-1">
+            <Text className="text-[13px] text-black leading-normal">
+              By continuing, I agree with Nurtura's{" "}
             </Text>
-            .
-          </Text>
+
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/signup/termsAndConditions")}
+            >
+              <Text className="text-[13px] font-semibold text-primary">
+                Terms of Service
+              </Text>
+            </TouchableOpacity>
+
+            <Text className="text-[13px] text-black leading-normal">
+              {" "}
+              and acknowledge Nurtura's{" "}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/signup/privacyPolicy")}
+            >
+              <Text className="text-[13px] font-semibold text-primary">
+                Privacy Policy
+              </Text>
+            </TouchableOpacity>
+
+            <Text className="text-[13px] text-black">.</Text>
+          </View>
         </View>
 
         <TouchableOpacity
