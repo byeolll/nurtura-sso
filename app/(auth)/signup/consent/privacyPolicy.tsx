@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, View } from 'react-native'
 
-const privacyPolicy = () => {
+const PrivacyPolicy = () => {
   return (
     <View className="flex-1 bg-[#F9FAFB]">
       <View className="flex-1 bg-white p-6 rounded-3xl shadow-md space-y-6">
@@ -55,4 +55,4 @@ const privacyPolicy = () => {
   )
 }
 
-export default privacyPolicy
+export default PrivacyPolicy

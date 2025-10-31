@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 
-const forgotPassword1 = () => { 
+const ForgotPassword1 = () => { 
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
@@ -28,7 +28,7 @@ const forgotPassword1 = () => {
   };
 
   const handleNextPress = async () => {
-    router.push("/(auth)/forgotPassword2");
+    router.push("/(auth)/forgetpassword/forgotPassword2");
   };
 
   return (
@@ -81,4 +81,4 @@ const forgotPassword1 = () => {
   );
 };
 
-export default forgotPassword1;
+export default ForgotPassword1;

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
-const createUserInfo = () => {
+const CreateUserInfo = () => {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -94,4 +94,4 @@ const createUserInfo = () => {
   );
 };
 
-export default createUserInfo;
+export default CreateUserInfo;

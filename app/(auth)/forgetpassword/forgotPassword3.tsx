@@ -9,7 +9,7 @@ import {
     View,
 } from "react-native";
 
-const forgotPassword3 = () => {
+const ForgotPassword3 = () => {
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -235,4 +235,4 @@ const forgotPassword3 = () => {
 };
 
 
-export default forgotPassword3
+export default ForgotPassword3
