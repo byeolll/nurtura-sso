@@ -208,7 +208,7 @@ const CreateAccount = () => {
               By continuing, I agree with Nurtura's{" "}
             </Text>
 
-            <TouchableOpacity onPress={() => router.push("/(auth)/signup/termsAndConditions")}>
+            <TouchableOpacity onPress={() => router.push("/(auth)/signup/consent/termsAndConditions")}>
               <Text className="text-[13px] font-semibold text-primary">
                 Terms of Service
               </Text>
@@ -218,7 +218,7 @@ const CreateAccount = () => {
               {" "}and acknowledge Nurtura's{" "}
             </Text>
 
-            <TouchableOpacity onPress={() => router.push("/(auth)/signup/privacyPolicy")}>
+            <TouchableOpacity onPress={() => router.push("/(auth)/signup/consent/privacyPolicy")}>
               <Text className="text-[13px] font-semibold text-primary">
                 Privacy Policy
               </Text>

@@ -10,7 +10,7 @@ import {
     View
 } from 'react-native';
 
-const forgotPassword2 = () => {
+const ForgotPassword2 = () => {
 
     const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
       const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -38,7 +38,7 @@ const forgotPassword2 = () => {
     
       // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
       const handleNextPress = async () => {
-        router.push('/(auth)/forgotPassword3')
+        router.push('/(auth)/forgetpassword/forgotPassword3');
         // const code = otp.join("");
     
         // try {
@@ -209,4 +209,4 @@ const forgotPassword2 = () => {
   )
 }
 
-export default forgotPassword2
+export default ForgotPassword2

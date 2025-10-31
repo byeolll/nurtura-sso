@@ -60,7 +60,7 @@ export default function LoginScreen() {
 
 
   const handleForgotPassword = () => {
-    router.push("/(auth)/forgotPassword1")
+    router.push("/(auth)/forgetpassword/forgotPassword1")
   }
 
   return (
@@ -132,10 +132,8 @@ export default function LoginScreen() {
 
           <Text className="ml-2">
           Forgot password?{' '}
-          <TouchableOpacity onPress={handleForgotPassword}>
-            <Text className="text-primary underline font-bold">Reset here.</Text>
-          </TouchableOpacity>
-        </Text>
+              <Text className="text-primary underline font-bold" onPress={handleForgotPassword}>Reset here.</Text>
+          </Text>
         </View>
 
         <View className="flex-row items-center my-6 mb-[25px] w-full">

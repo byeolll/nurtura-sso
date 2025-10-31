@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { Image } from 'react-native';
 import '../../globals.css';
 
-export default function SignupLayout() {
+export default function ForgetPasswordLayout() {
   return (
     <Stack 
       screenOptions={{ 
@@ -14,49 +14,32 @@ export default function SignupLayout() {
       }}
     >
       <Stack.Screen 
-        name="createAccount" 
+        name="forgotPassword1" 
         options={{ 
           headerTitle: () => (
-            <Image source={require('@/assets/images/signupProgress1.png')} />
+            <Image source={require('@/assets/images/progress1.png')} />
           ), 
           headerShown: true, 
         }} 
       />
       <Stack.Screen 
-        name="emailOTP" 
+        name="forgotPassword2" 
         options={{ 
           headerTitle: () => (
-            <Image source={require('@/assets/images/signupProgress2.png')} />
+            <Image source={require('@/assets/images/progress2.png')} />
           ), 
           headerShown: true, 
         }} 
       />
       <Stack.Screen 
-        name="createPassword" 
+        name="forgotPassword3" 
         options={{ 
           headerTitle: () => (
-            <Image source={require('@/assets/images/signupProgress3.png')} />
+            <Image source={require('@/assets/images/progress3.png')} />
           ), 
           headerShown: true, 
         }} 
       />
-      <Stack.Screen 
-        name="createUserInfo" 
-        options={{ 
-          headerTitle: () => (
-            <Image source={require('@/assets/images/signupProgress4.png')} />
-          ), 
-          headerShown: true, 
-        }} 
-      />
-
-      <Stack.Screen
-        name="consent"
-        options={{
-          headerShown: true,
-          headerTitle: '',
-        }}
-        />
       
     </Stack>
   );

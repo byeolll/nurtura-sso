@@ -9,12 +9,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCQEUsWhzDnyk-cFuG4jfakvsq67VnqtL0",
-  authDomain: "nurtura-b967b.firebaseapp.com",
-  projectId: "nurtura-b967b",
-  storageBucket: "nurtura-b967b.firebasestorage.app",
-  messagingSenderId: "871389551301",
-  appId: "1:871389551301:web:b1ded72dbe665ef77e6eac"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSENGER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
@@ -22,11 +22,11 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 let auth: Auth;
 try {
-  auth = getAuth(app);
-} catch (e) {
-  auth = initializeAuth(app, {
+    auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
-  });
+    });
+} catch (e) {
+  auth = getAuth(app);
 }
 
 export const googleProvider = new GoogleAuthProvider();
