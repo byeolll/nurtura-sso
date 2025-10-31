@@ -1,15 +1,15 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Image,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 
-const CreatePassword = () => {
+const forgotPassword3 = () => {
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -110,7 +110,7 @@ const CreatePassword = () => {
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-start">
         <Text className="text-black font-bold text-[24px] pr-[110px] mb-[13px] pl-2">
-          Set your password
+          Set new password
         </Text>
 
         <Text className="mb-[20px] text-[13px] text-gray-700 leading-normal pl-2">
@@ -234,4 +234,5 @@ const CreatePassword = () => {
   );
 };
 
-export default CreatePassword;
+
+export default forgotPassword3
