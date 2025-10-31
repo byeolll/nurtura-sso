@@ -138,6 +138,8 @@ const CreatePassword = () => {
               autoCapitalize="none"
               value={password}
               onChangeText={(text) => setPassword(text)}
+              contextMenuHidden={true}
+              textContentType="oneTimeCode"
             />
           </View>
 
@@ -185,6 +187,8 @@ const CreatePassword = () => {
               autoCapitalize="none"
               value={confirmPassword}
               onChangeText={(text) => setConfirmPassword(text)}
+              contextMenuHidden={true}
+              textContentType="oneTimeCode"
             />
           </View>
 
