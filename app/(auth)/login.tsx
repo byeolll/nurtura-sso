@@ -1,7 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -11,33 +10,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { signInWithGoogleCredential } from "../../firebase";
 import "../globals.css";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const navigation = useNavigation();
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false); // nilagay q to for hold password visibility toggle
   const [password, setPassword] = useState(""); // nilagay q to for hold password visibility toggle
 
   const [isLoginInvalid, setIsLoginInvalid] = useState(false); // for invalid login handling lang
-
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [error, setError] = useState<any>(null);
   
-
-
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: "871389551301-8d4an920eclthuah35lobfiqum80bnri.apps.googleusercontent.com",
-      offlineAccess: true,
-      forceCodeForRefreshToken: true,
-    });
-  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -60,34 +46,18 @@ export default function LoginScreen() {
   };
 
     const handleGooglePress = async () => {
-      try {
-        await GoogleSignin.signOut();
-        await GoogleSignin.hasPlayServices();
-        const result = await GoogleSignin.signIn();
-
-        console.log("GOOGLE SIGNIN RESULT:", result);
-
-        const idToken = result.data?.idToken;
-
-        if (!idToken) {
-          throw new Error("No ID token returned from Google");
-        }
-
-        await signInWithGoogleCredential(idToken);
-
-        console.log("Firebase login success");
-        router.replace("/(tabs)");
-      } catch (error) {
-        console.log("Google Sign-In Error:", error);
+      setLoading(true);
+        try {
+          await signInWithGoogle();
+          router.replace("/(tabs)/profile");
+        } catch (error: any) {
+          console.log("Google Sign-In Error:", error);
+          Alert.alert("Google Sign-In Failed", error.message);
+        } finally {
+          setLoading(false);
       }
     };
 
-
-  const logout = async () => {
-    setUserInfo(null);
-    await GoogleSignin.revokeAccess();
-    await GoogleSignin.signOut();
-  };
 
   const handleForgotPassword = () => {
     router.push("/(auth)/forgotPassword1")

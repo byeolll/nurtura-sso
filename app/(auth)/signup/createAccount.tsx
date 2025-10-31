@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -9,8 +10,7 @@ import {
   View,
 } from "react-native";
 import "../../globals.css";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { signInWithGoogleCredential } from "../../../firebase";
+
 
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -21,6 +21,8 @@ const CreateAccount = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+
+  const { signInWithGoogle } = useAuth();
 
   const validateEmail = (value: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -100,28 +102,17 @@ const CreateAccount = () => {
   const handleGooglePress = async () => {
     if (!isGoogleButtonEnabled) return;
 
-  try {
-    await GoogleSignin.signOut();
-
-    const result = await GoogleSignin.signIn();
-
-    console.log("GOOGLE SIGNIN RESULT:", result);
-
-    const idToken = result.data?.idToken;
-    if (!idToken) {
-      throw new Error("No ID token returned from Google");
-    }
-
-    const firebaseResult = await signInWithGoogleCredential(idToken);
-
-    console.log("Firebase login success", firebaseResult.user);
-
-    router.replace("../(tabs)"); 
-
-  } catch (error: any) {
-    console.log("Google Sign-In Error:", error);
-    Alert.alert("Google Sign-In Failed", error.message);
-  }
+    setLoading(true);
+      try {
+        await signInWithGoogle();
+        console.log("Firebase login success via Google");
+        router.replace("../(tabs)");
+      } catch (error: any) {
+        console.log("Google Sign-In Error:", error);
+        Alert.alert("Google Sign-In Failed", error.message);
+      } finally {
+        setLoading(false);
+      }
   };
 
   const CHECKBOX_BG = isChecked ? "bg-primary" : "border-gray-300 border-[2px]";
