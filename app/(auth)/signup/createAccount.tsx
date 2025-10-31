@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import "../../globals.css";
 
-
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -24,6 +23,13 @@ const CreateAccount = () => {
 
   const { signInWithGoogle } = useAuth();
 
+  const removeEmojis = (text: string) => {
+    return text.replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+      ""
+    );
+  };
+
   const validateEmail = (value: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regex.test(value)) {
@@ -35,9 +41,10 @@ const CreateAccount = () => {
     }
   };
 
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    validateEmail(value);
+  const handleEmailChange = (value: string) => { 
+    const cleanText = removeEmojis(value);
+    setEmail(cleanText);
+    validateEmail(cleanText);
   };
 
   const isNextButtonEnabled = email.length > 0 && isEmailValid && isChecked;
@@ -48,6 +55,10 @@ const CreateAccount = () => {
   };
 
   const handleNextPress = async () => {
+    router.push({
+      pathname: "/(auth)/signup/emailOTP",
+      params: { email },
+    });
     if (!isNextButtonEnabled) return;
 
     setLoading(true);
@@ -66,7 +77,6 @@ const CreateAccount = () => {
         : "border-[#919191]";
 
       console.log("🔹 Fetching from:", `http://${LOCAL_IP}:${PORT}/send-otp`);
-  
 
       const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
         method: "POST",
@@ -103,16 +113,16 @@ const CreateAccount = () => {
     if (!isGoogleButtonEnabled) return;
 
     setLoading(true);
-      try {
-        await signInWithGoogle();
-        console.log("Firebase login success via Google");
-        router.replace("../(tabs)");
-      } catch (error: any) {
-        console.log("Google Sign-In Error:", error);
-        Alert.alert("Google Sign-In Failed", error.message);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      await signInWithGoogle();
+      console.log("Firebase login success via Google");
+      router.replace("../(tabs)");
+    } catch (error: any) {
+      console.log("Google Sign-In Error:", error);
+      Alert.alert("Google Sign-In Failed", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const CHECKBOX_BG = isChecked ? "bg-primary" : "border-gray-300 border-[2px]";
@@ -141,8 +151,7 @@ const CreateAccount = () => {
             value={email}
           />
         </View>
-
-        {/* 🔹 Error message */}
+ 
         {emailError.length > 0 && (
           <Text className="text-[#E65656] text-[13px] mt-1 pl-2">
             {emailError}
@@ -172,7 +181,7 @@ const CreateAccount = () => {
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.1,
                     shadowRadius: 2,
-                    elevation: 2, 
+                    elevation: 2,
                   }
                 : {}),
             },
@@ -191,11 +200,10 @@ const CreateAccount = () => {
       </View>
 
       <View className="w-full">
-      <View className="flex-row items-start justify-start px-4 my-4">
-
+        <View className="flex-row items-center justify-start pr-4 my-4">
           <TouchableOpacity onPress={handleCheckboxToggle}>
             <View
-              className={`mx-2 w-6 h-6 rounded-md items-center justify-center ${CHECKBOX_BG}`}
+              className={`ml-1 mr-4 w-6 h-6 rounded-md flex items-center justify-center ${CHECKBOX_BG}`}
             >
               {isChecked && (
                 <Text className="text-sm font-bold text-white">✓</Text>
@@ -208,17 +216,25 @@ const CreateAccount = () => {
               By continuing, I agree with Nurtura's{" "}
             </Text>
 
-            <TouchableOpacity onPress={() => router.push("/(auth)/signup/consent/termsAndConditions")}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push("/(auth)/signup/consent/termsAndConditions")
+              }
+            >
               <Text className="text-[13px] font-semibold text-primary">
                 Terms of Service
               </Text>
             </TouchableOpacity>
 
             <Text className="text-[13px] text-black leading-normal">
-              {" "}and acknowledge Nurtura's{" "}
+              and acknowledge Nurtura's{" "}
             </Text>
 
-            <TouchableOpacity onPress={() => router.push("/(auth)/signup/consent/privacyPolicy")}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push("/(auth)/signup/consent/privacyPolicy")
+              }
+            >
               <Text className="text-[13px] font-semibold text-primary">
                 Privacy Policy
               </Text>

@@ -15,15 +15,24 @@ import "../globals.css";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoginInvalid, setIsLoginInvalid] = useState(false);
 
   const { signIn, signInWithGoogle } = useAuth();
   const navigation = useNavigation();
-
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false); // nilagay q to for hold password visibility toggle
-  const [password, setPassword] = useState(""); // nilagay q to for hold password visibility toggle
-
-  const [isLoginInvalid, setIsLoginInvalid] = useState(false); // for invalid login handling lang
-  
+ 
+  const removeEmojis = (text: string) => {
+    return text.replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+      ""
+    );
+  };
+ 
+  const handleEmailChange = (value: string) => {
+    const cleanText = removeEmojis(value);
+    setEmail(cleanText);
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -45,23 +54,22 @@ export default function LoginScreen() {
     }
   };
 
-    const handleGooglePress = async () => {
-      setLoading(true);
-        try {
-          await signInWithGoogle();
-          router.replace("/(tabs)/profile");
-        } catch (error: any) {
-          console.log("Google Sign-In Error:", error);
-          Alert.alert("Google Sign-In Failed", error.message);
-        } finally {
-          setLoading(false);
-      }
-    };
-
+  const handleGooglePress = async () => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      router.replace("/(tabs)/profile");
+    } catch (error: any) {
+      console.log("Google Sign-In Error:", error);
+      Alert.alert("Google Sign-In Failed", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleForgotPassword = () => {
-    router.push("/(auth)/forgetpassword/forgotPassword1")
-  }
+    router.push("/(auth)/forgetpassword/forgotPassword1");
+  };
 
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen items-center">
@@ -71,7 +79,7 @@ export default function LoginScreen() {
         resizeMode="contain"
       />
 
-      <View className="w-full mb-4 relative -top-[25%]">
+      <View className="w-full mb-4 relative -top-[25%]"> 
         <View
           className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
             isLoginInvalid ? "border-[#E65656]" : "border-[#919191]"
@@ -83,13 +91,13 @@ export default function LoginScreen() {
           <TextInput
             className="text-black text-[16px]"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={handleEmailChange}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
           />
         </View>
-
+ 
         <View className="relative w-full mb-[5px]">
           <View
             className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
@@ -105,9 +113,12 @@ export default function LoginScreen() {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={setPassword} 
+              contextMenuHidden={true}
+              selectTextOnFocus={false}
             />
           </View>
+
           {isLoginInvalid && (
             <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
               Invalid login. Please try again.
@@ -116,7 +127,7 @@ export default function LoginScreen() {
 
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-            activeOpacity={1} // disables touch animation
+            activeOpacity={1}
             className="absolute right-5 pr-2 top-1/2 -translate-y-1/2"
           >
             <Image
@@ -131,11 +142,16 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <Text className="ml-2">
-          Forgot password?{' '}
-              <Text className="text-primary underline font-bold" onPress={handleForgotPassword}>Reset here.</Text>
+            Forgot password?{" "}
+            <Text
+              className="text-primary underline font-bold"
+              onPress={handleForgotPassword}
+            >
+              Reset here.
+            </Text>
           </Text>
         </View>
-
+ 
         <View className="flex-row items-center my-6 mb-[25px] w-full">
           <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />
           <Text className="text-black text-[13px]">or</Text>
@@ -158,12 +174,10 @@ export default function LoginScreen() {
             className="w-5 h-5 mr-3"
             resizeMode="contain"
           />
-          <Text className={"text-[16px] font-semibold text-black"}>
+          <Text className="text-[16px] font-semibold text-black">
             Continue with Google
           </Text>
         </TouchableOpacity>
-
-        
       </View>
 
       <View className="absolute bottom-10 w-full">
@@ -173,8 +187,8 @@ export default function LoginScreen() {
           disabled={loading}
         >
           <Text className="text-center text-gray-600">
-            Dont have an account?{" "}
-            <Text className="text-primary font-semibold underline-offset-auto underline">
+            Don't have an account?{" "}
+            <Text className="text-primary font-semibold underline">
               Create one here.
             </Text>
           </Text>

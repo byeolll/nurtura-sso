@@ -37,7 +37,7 @@ const EmailOTP = () => {
   const allFilled = otp.every((v) => v !== "");
 
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
-  const handleNextPress = async () => {
+  const handleNextPress = async () => { 
     const code = otp.join("");
 
     try {
