@@ -49,7 +49,22 @@ export default function SignupLayout() {
           headerShown: true, 
         }} 
       />
-      
+       <Stack.Screen
+        name="termsAndConditions"
+        options={{
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: "#F9FAFB" },
+        }}
+      />
+      <Stack.Screen
+        name="privacyPolicy"
+        options={{
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: "#F9FAFB" },
+        }}
+      />
       
     </Stack>
   );

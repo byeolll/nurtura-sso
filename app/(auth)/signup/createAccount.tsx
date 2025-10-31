@@ -191,7 +191,8 @@ const CreateAccount = () => {
       </View>
 
       <View className="w-full">
-        <View className="flex-row items-center justify-center px-4 my-4">
+      <View className="flex-row items-start justify-start px-4 my-4">
+
           <TouchableOpacity onPress={handleCheckboxToggle}>
             <View
               className={`mx-2 w-6 h-6 rounded-md items-center justify-center ${CHECKBOX_BG}`}
@@ -202,17 +203,29 @@ const CreateAccount = () => {
             </View>
           </TouchableOpacity>
 
-          <Text className="ml-3 text-[13px] text-black leading-normal">
-            By continuing, I agree with Nurtura's{" "}
-            <Text className="text-[13px] font-semibold text-primary">
-              Terms of Service
-            </Text>{" "}
-            and acknowledge Nurtura's{" "}
-            <Text className="text-[13px] font-semibold text-primary">
-              Privacy Policy
+          <View className="flex-1 flex-row flex-wrap ml-1">
+            <Text className="text-[13px] text-black leading-normal">
+              By continuing, I agree with Nurtura's{" "}
             </Text>
-            .
-          </Text>
+
+            <TouchableOpacity onPress={() => router.push("/(auth)/signup/termsAndConditions")}>
+              <Text className="text-[13px] font-semibold text-primary">
+                Terms of Service
+              </Text>
+            </TouchableOpacity>
+
+            <Text className="text-[13px] text-black leading-normal">
+              {" "}and acknowledge Nurtura's{" "}
+            </Text>
+
+            <TouchableOpacity onPress={() => router.push("/(auth)/signup/privacyPolicy")}>
+              <Text className="text-[13px] font-semibold text-primary">
+                Privacy Policy
+              </Text>
+            </TouchableOpacity>
+
+            <Text className="text-[13px] text-black">.</Text>
+          </View>
         </View>
 
         <TouchableOpacity
