@@ -63,6 +63,9 @@ const CreateAccount = () => {
         ? "border-red-500"
         : "border-[#919191]";
 
+      console.log("🔹 Fetching from:", `http://${LOCAL_IP}:${PORT}/send-otp`);
+  
+
       const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,7 +101,6 @@ const CreateAccount = () => {
     if (!isGoogleButtonEnabled) return;
 
   try {
-    // ✅ Force Google to show account chooser every time
     await GoogleSignin.signOut();
 
     const result = await GoogleSignin.signIn();
@@ -112,12 +114,12 @@ const CreateAccount = () => {
 
     const firebaseResult = await signInWithGoogleCredential(idToken);
 
-    console.log("✅ Firebase login success", firebaseResult.user);
+    console.log("Firebase login success", firebaseResult.user);
 
     router.replace("../(tabs)"); 
 
   } catch (error: any) {
-    console.log("❌ Google Sign-In Error:", error);
+    console.log("Google Sign-In Error:", error);
     Alert.alert("Google Sign-In Failed", error.message);
   }
   };

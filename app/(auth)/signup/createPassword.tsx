@@ -8,6 +8,9 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebase";
 
 const CreatePassword = () => {
   // para sa show/hide password
@@ -22,9 +25,22 @@ const CreatePassword = () => {
   const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(false);
 
+  const { email } = useLocalSearchParams();
+  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
+
   // pang-enable lang sa Next button
   const isNextButtonEnabled =
     isPasswordValid && isConfirmPasswordValid && passwordsMatch;
+
+    console.log("Next button enabled:", isNextButtonEnabled);
+
+  useEffect(() => {
+    console.log("isNextButtonEnabled:", isNextButtonEnabled);
+  }, [isNextButtonEnabled]);
+
+  useEffect(() => {
+    console.log("CreatePassword component mounted");
+  }, []);
 
   // regex para sa password
   const isStrongPassword = (password: string) => {
@@ -61,10 +77,24 @@ const CreatePassword = () => {
   }, [password, confirmPassword]);
 
   // sa next press lang
-  const handleNextPress = () => {
+  const handleNextPress = async () => {
+    console.log("Next button pressed!");
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
-      console.log(`Passwords match and are valid: ${password}`);
-    } else {
+      try {
+      console.log("🔹 Attempting Firebase sign-up with:", email);
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        normalizedEmail,
+        password
+      );
+      console.log("User created successfully:", userCredential.user.uid);
+      router.replace("/(tabs)/profile");
+    } catch (error:any) {
+      console.error("Firebase sign-up error:", error);
+      Alert.alert("Sign Up Failed", error.message);
+    }
+    }else {
       Alert.alert("Invalid Password", "Please check your inputs again.");
     }
   };
