@@ -2,18 +2,25 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
-
-const ForgotPassword1 = () => { 
+const ForgotPassword1 = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [email, setEmail] = React.useState("");
 
+  const removeEmojis = (text: string) => {
+    return text.replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+      ""
+    );
+  };
+
   const isNextButtonEnabled = email.length > 0 && isEmailValid;
 
   const handleEmailChange = (value: string) => {
-    setEmail(value);
-    validateEmail(value);
+    const cleanValue = removeEmojis(value);
+    setEmail(cleanValue);
+    validateEmail(cleanValue);
   };
 
   const validateEmail = (value: string) => {

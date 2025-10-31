@@ -1,12 +1,12 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Image,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 const ForgotPassword3 = () => {
@@ -138,6 +138,8 @@ const ForgotPassword3 = () => {
               autoCapitalize="none"
               value={password}
               onChangeText={(text) => setPassword(text)}
+              contextMenuHidden={true}
+              selectTextOnFocus={false}
             />
           </View>
 
@@ -185,6 +187,8 @@ const ForgotPassword3 = () => {
               autoCapitalize="none"
               value={confirmPassword}
               onChangeText={(text) => setConfirmPassword(text)}
+              contextMenuHidden={true}
+              selectTextOnFocus={false}
             />
           </View>
 
@@ -234,5 +238,4 @@ const ForgotPassword3 = () => {
   );
 };
 
-
-export default ForgotPassword3
+export default ForgotPassword3;
