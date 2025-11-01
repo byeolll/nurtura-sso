@@ -1,8 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Alert,
+  BackHandler,
   Image,
   Text,
   TextInput,
@@ -10,6 +11,10 @@ import {
   View,
 } from "react-native";
 import "../../globals.css";
+
+import { USER_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createUserInfo"; // info ni user galing sa createUserInfo passward passward passward
+import { useFocusEffect } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
 
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -22,6 +27,34 @@ const CreateAccount = () => {
   const [emailError, setEmailError] = useState("");
 
   const { googleSignUp } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        Alert.alert("Go back?", "Your process will be deleted and cleared.", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: async () => {
+              await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY); // user info i2
+              await SecureStore.deleteItemAsync("signup_password"); // passward
+              await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
+              router.back();
+            },
+          },
+        ]);
+        return true; // prevent default back action
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [])
+  );
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -64,7 +97,7 @@ const CreateAccount = () => {
   };
 
   const handleEmailChange = (value: string) => {
-    const cleanText = removeEmojis(value);
+    const cleanText = removeEmojis(value.replace(/\s/g, ""));
     setEmail(cleanText);
     validateEmail(cleanText);
   };
@@ -77,6 +110,11 @@ const CreateAccount = () => {
   };
 
   const handleNextPress = async () => {
+    router.push({
+      pathname: "/(auth)/signup/emailOTP",
+      params: { email },
+    });
+
     if (!isNextButtonEnabled) return;
 
     setLoading(true);
@@ -125,6 +163,7 @@ const CreateAccount = () => {
       } else {
         Alert.alert("Error", result.message || "Failed to send OTP.");
         console.error(result.error);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -149,6 +188,7 @@ const CreateAccount = () => {
             lastName: newUserData.lastName ?? "",
           },
         });
+        setLoading(false);
       });
 
       console.log("Google Sign-Up successful");

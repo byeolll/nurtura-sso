@@ -27,6 +27,15 @@ const EmailOTP = () => {
       const newOtp = [...otp];
       newOtp[index] = text;
       setOtp(newOtp);
+ 
+      if (isOtpInvalid) {
+        setIsOtpInvalid(false);
+      }
+ 
+      if (newOtp.every((v) => v === "")) {
+        setIsOtpInvalid(false);
+      }
+ 
       if (text && index < 4) {
         inputs.current[index + 1]?.focus();
       }
@@ -36,13 +45,19 @@ const EmailOTP = () => {
   // checker if all inputs ay filled
   const allFilled = otp.every((v) => v !== "");
 
-  const [loading, setLoading] = useState(false);  // for loading
-
+  const [loading, setLoading] = useState(false); // for loading
 
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
   const handleNextPress = async () => {
+
+    router.push({
+          pathname: "/(auth)/signup/createPassword",
+          params: { email },
+        });
+
+        
     const code = otp.join("");
-    
+
     setLoading(true);
 
     try {
@@ -63,9 +78,11 @@ const EmailOTP = () => {
           pathname: "/(auth)/signup/createPassword",
           params: { email },
         });
+        setLoading(false);
       } else {
         setIsOtpInvalid(true);
         console.log("Invalid OTP");
+        setLoading(false);
       }
     } catch (error) {
       console.log("Error verifying OTP:", error);
@@ -222,7 +239,9 @@ const EmailOTP = () => {
           }`}
           disabled={!allFilled}
         >
-          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Next"}</Text>
+          <Text className="text-white text-[16px] font-bold">
+            {loading ? "Loading..." : "Next"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

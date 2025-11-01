@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View, ActivityIndicator, Image, ScrollView } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
 const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -74,14 +74,14 @@ export default function ProfileScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#000" />
-        <Text className="mt-3 text-gray-600">Loading profile...</Text>
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 items-center justify-center bg-white">
+  //       <ActivityIndicator size="large" color="#000" />
+  //       <Text className="mt-3 text-gray-600">Loading profile...</Text>
+  //     </View>
+  //   );
+  // }
 
 
   return (

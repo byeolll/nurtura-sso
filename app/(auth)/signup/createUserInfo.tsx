@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 
+export const USER_INFO_STORAGE_KEY = "temp_user_info";
+
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const ITEM_HEIGHT = 40;
 
@@ -134,22 +136,84 @@ const createUserInfo = () => {
 
   const { signUp } = useAuth();
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
-  const { email, password, fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
+  const {
+    email,
+    password,
+    fromGoogle,
+    firstName: googleFirstName,
+    lastName: googleLastName,
+  } = useLocalSearchParams();
 
   const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
-  const normalizedPassword = Array.isArray(password) ? password[0] : password || "";
+  const normalizedPassword = Array.isArray(password)
+    ? password[0]
+    : password || "";
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
   useEffect(() => {
     if (fromGoogle === "true") {
-      setFirstName(Array.isArray(googleFirstName) ? googleFirstName[0] : googleFirstName || "");
-      setLastName(Array.isArray(googleLastName) ? googleLastName[0] : googleLastName || "");
+      setFirstName(
+        Array.isArray(googleFirstName)
+          ? googleFirstName[0]
+          : googleFirstName || ""
+      );
+      setLastName(
+        Array.isArray(googleLastName) ? googleLastName[0] : googleLastName || ""
+      );
     }
   }, [fromGoogle, googleFirstName, googleLastName]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const savedData = await SecureStore.getItemAsync(USER_INFO_STORAGE_KEY);
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          setUsername(parsed.username || "");
+          setFirstName(parsed.firstName || "");
+          setLastName(parsed.lastName || "");
+          setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
+          setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
+          setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
+        }
+      } catch (err) {
+        console.log("Error loading saved user info:", err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const saveUserInfo = async () => {
+      try {
+        const dataToSave = {
+          username,
+          firstName,
+          lastName,
+          selectedMonthIndex,
+          selectedDayIndex,
+          selectedYearIndex,
+        };
+        await SecureStore.setItemAsync(
+          USER_INFO_STORAGE_KEY,
+          JSON.stringify(dataToSave)
+        );
+      } catch (err) {
+        console.log("Error saving user info:", err);
+      }
+    };
+    saveUserInfo();
+  }, [
+    username,
+    firstName,
+    lastName,
+    selectedMonthIndex,
+    selectedDayIndex,
+    selectedYearIndex,
+  ]);
 
   // Memoize static data
   const monthsList = useMemo(
@@ -186,7 +250,6 @@ const createUserInfo = () => {
   const handleSubmitUserInfo = async () => {
     setLoading(true);
     try {
-
       const { token } = await signUp(normalizedEmail, normalizedPassword);
 
       if (!token) {
@@ -198,19 +261,22 @@ const createUserInfo = () => {
         username,
         firstName,
         lastName,
-        birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, '0')}-${daysList[selectedDayIndex].toString().padStart(2, '0')}`,
+        birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
       };
 
       console.log("Sending User Details:", userDetails);
 
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(userDetails),
-      });
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/users/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(userDetails),
+        }
+      );
 
       const data = await response.json();
 
@@ -233,6 +299,9 @@ const createUserInfo = () => {
       }
 
       Alert.alert("Success", "User profile saved!");
+      await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+      await SecureStore.deleteItemAsync("signup_password");
+      await SecureStore.deleteItemAsync("signup_confirm_password");
       await SecureStore.deleteItemAsync("firebaseToken");
     } catch (error) {
       console.log("Error submitting user info:", error);
@@ -250,7 +319,7 @@ const createUserInfo = () => {
     checkIfFirstNameHasValue &&
     checkIfLastNameHasValue;
 
-  const removeEmojis = (text: string) => { 
+  const removeEmojis = (text: string) => {
     return text.replace(
       /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
       ""
@@ -258,17 +327,17 @@ const createUserInfo = () => {
   };
 
   const handleUsernameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9._-]/g, "");  
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9._-]/g, "");
     setUsername(cleanText.slice(0, 30));
   };
 
   const handleFirstNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z]/g, ""); 
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z]/g, "");
     setFirstName(cleanText);
   };
 
   const handleLastNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z]/g, ""); 
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z]/g, "");
     setLastName(cleanText);
   };
 
@@ -290,11 +359,11 @@ const createUserInfo = () => {
 
           {fromGoogle === "true" && (
             <Text className="text-center text-red-500 mb-4">
-              Welcome! We’ve pre-filled your info from Google — please enter your
-              birthday to complete your registration.
+              Welcome! We’ve pre-filled your info from Google — please enter
+              your birthday to complete your registration.
             </Text>
           )}
- 
+
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[5px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Username
@@ -308,7 +377,7 @@ const createUserInfo = () => {
           <Text className="text-gray-500 text-[12px] pb-5 ml-2">
             {username.length}/30
           </Text>
- 
+
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               First Name
@@ -319,7 +388,7 @@ const createUserInfo = () => {
               onChangeText={handleFirstNameChange}
             />
           </View>
- 
+
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Last Name
@@ -330,7 +399,7 @@ const createUserInfo = () => {
               onChangeText={handleLastNameChange}
             />
           </View>
-                    
+
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Birthday
@@ -342,7 +411,7 @@ const createUserInfo = () => {
               </Text>
             </TouchableOpacity>
           </View>
- 
+
           {isDatePickerVisible && (
             <Modal
               visible={isDatePickerVisible}
@@ -366,7 +435,7 @@ const createUserInfo = () => {
                     </TouchableOpacity>
                   </View>
 
-                  <View className="flex-row justify-around items-center"> 
+                  <View className="flex-row justify-around items-center">
                     <View style={{ width: 130 }}>
                       <WheelScrollPicker
                         data={monthsList}
@@ -374,7 +443,7 @@ const createUserInfo = () => {
                         onSelect={setSelectedMonthIndex}
                       />
                     </View>
- 
+
                     <View style={{ width: 70 }}>
                       <WheelScrollPicker
                         data={daysList}
@@ -382,7 +451,7 @@ const createUserInfo = () => {
                         onSelect={setSelectedDayIndex}
                       />
                     </View>
- 
+
                     <View style={{ width: 90 }}>
                       <WheelScrollPicker
                         data={yearsList}
@@ -397,8 +466,8 @@ const createUserInfo = () => {
           )}
         </View>
       </ScrollView>
- 
-      <View className="pb-6"> 
+
+      <View className="pb-6">
         <TouchableOpacity
           disabled={!areAllFieldsFilled}
           onPress={handleSubmitUserInfo}
@@ -406,7 +475,9 @@ const createUserInfo = () => {
             areAllFieldsFilled ? "bg-primary" : "bg-[#919191]"
           } items-center`}
         >
-          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Finish"}</Text>
+          <Text className="text-white text-[16px] font-bold">
+            {loading ? "Loading..." : "Finish"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

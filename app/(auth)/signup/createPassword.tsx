@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -10,7 +11,9 @@ import {
   View,
 } from "react-native";
 
+
 const CreatePassword = () => {
+
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -26,6 +29,27 @@ const CreatePassword = () => {
   const { email } = useLocalSearchParams();
 
   const [loading, setLoading] = useState(false); // for loading
+
+  // Load saved passwords (if any)
+useEffect(() => {
+  const loadPasswords = async () => {
+    const savedPassword = await SecureStore.getItemAsync("signup_password");
+    const savedConfirm = await SecureStore.getItemAsync("signup_confirm_password");
+
+    if (savedPassword) setPassword(savedPassword);
+    if (savedConfirm) setConfirmPassword(savedConfirm);
+  };
+  loadPasswords();
+}, []);
+
+// Save passwords when they change
+useEffect(() => {
+  const savePasswords = async () => {
+    await SecureStore.setItemAsync("signup_password", password);
+    await SecureStore.setItemAsync("signup_confirm_password", confirmPassword);
+  };
+  savePasswords();
+}, [password, confirmPassword]);
 
   // pang-enable lang sa Next button
   const isNextButtonEnabled =
@@ -86,12 +110,14 @@ const CreatePassword = () => {
           pathname: "/(auth)/signup/createUserInfo",
           params: { email, password },
         });
+        setLoading(false);
       } catch (error: any) {
         Alert.alert("Signup Failed", error.message);
         setLoading(false);
       }
     } else {
       Alert.alert("Invalid Password", "Please check your inputs again.");
+      setLoading(false);
     }
   };
 
@@ -135,7 +161,7 @@ const CreatePassword = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={(text) => setPassword(text)}
+              onChangeText={(text) => setPassword(text.replace(/\s/g, ""))}
             />
           </View>
 
@@ -182,7 +208,9 @@ const CreatePassword = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={confirmPassword}
-              onChangeText={(text) => setConfirmPassword(text)}
+              onChangeText={(text) =>
+                setConfirmPassword(text.replace(/\s/g, ""))
+              }
             />
           </View>
 
@@ -224,7 +252,9 @@ const CreatePassword = () => {
           }`}
           disabled={!isNextButtonEnabled}
         >
-          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Next" }</Text>
+          <Text className="text-white text-[16px] font-bold">
+            {loading ? "Loading..." : "Next"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
