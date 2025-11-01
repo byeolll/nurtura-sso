@@ -1,14 +1,69 @@
-import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, StyleSheet, Text, View, Alert } from "react-native";
+import { useAuth } from "@/contexts/AuthContext";
+
+const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+const PORT = process.env.EXPO_PUBLIC_PORT;
 
 export default function NurturaWelcome() {
+  const { user } = useAuth();
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!user?.email) return;
+      try {
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email }),
+        });
+
+        const data = await response.json();
+        if (response.ok && data.userInfo) {
+          setUserInfo(data.userInfo);
+        } else {
+          console.log("No DB user info found, using Firebase/Google data");
+          setUserInfo({
+            username: user.username || "—",
+            first_name: user.firstName || "—",
+            last_name: user.lastName || "—",
+            email: user.email,
+            birthday: user.birthday || null,
+          });
+        }
+      } catch (err: any) {
+        console.error("Fetch user info failed:", err);
+        Alert.alert("Error", "Unable to fetch profile data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
+
+  const fullName = `${userInfo?.first_name || "—"} ${userInfo?.last_name || ""}`;
+  const age = userInfo?.birthday
+    ? Math.floor((new Date().getTime() - new Date(userInfo.birthday).getTime()) / (1000 * 60 * 60 * 24 * 365))
+    : "—";
+
   return (
     <View style={styles.container}>
       
       <View style={styles.header}>
         <View>
           <Text style={styles.welcome}>Welcome,</Text>
-          <Text style={styles.username}>Fullname</Text>
+          <Text style={styles.username}>{fullName}</Text>
         </View>
 
         <Image
@@ -27,7 +82,7 @@ export default function NurturaWelcome() {
 
         <View style={styles.messageContainer}>
           <Text style={styles.boldText}>
-            <Text style={styles.placeholder}>(Username)</Text>, doesn't have a Nurtura Rack
+            <Text style={styles.placeholder}>{userInfo?.username || "—"}</Text>, doesn't have a Nurtura Rack
           </Text>
         </View>
       </View>
@@ -35,10 +90,10 @@ export default function NurturaWelcome() {
       <View style={styles.bottomSection}>
         <View style={styles.infoBlock}>
           <Text style={styles.boldText}>
-            Are you really <Text style={styles.placeholder}>age</Text> years old?
+            Are you really <Text style={styles.placeholder}>{age}</Text> years old?
           </Text>
           <Text style={styles.subText}>
-            Check if <Text style={styles.placeholder}>(birthday)</Text> is your
+            Check if <Text style={styles.placeholder}>{userInfo?.formattedBirthday || "—"}</Text> is your
             real birthday.
           </Text>
         </View>
@@ -46,8 +101,7 @@ export default function NurturaWelcome() {
         <View style={styles.infoBlock}>
           <Text style={styles.boldText}>Is this really yours?</Text>
           <Text style={styles.subText}>
-            Is <Text style={styles.placeholder}>(email)</Text> and{" "}
-            <Text style={styles.placeholder}>(number)</Text> yours?
+            Is <Text style={styles.placeholder}>{userInfo?.email || "—"}</Text> and{" "}
           </Text>
         </View>
       </View>
