@@ -18,11 +18,10 @@ const CreateAccount = () => {
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isEmailUnique, setIsEmailUnique] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
 
-  const { signInWithGoogle } = useAuth();
+  const { googleSignUp } = useAuth();
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -99,12 +98,12 @@ const CreateAccount = () => {
         ? "border-red-500"
         : "border-[#919191]";
 
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          passcode: otp,
+          code: otp,
           time: formattedTime,
         }),
       });
@@ -135,12 +134,23 @@ const CreateAccount = () => {
 
     setLoading(true);
     try {
-      await signInWithGoogle();
-      console.log("Firebase login success via Google");
-      router.replace("../(tabs)");
+    
+      await googleSignUp((newUserData) => {
+        console.log("New user detected:", newUserData);
+        router.push({
+          pathname: "/(auth)/signup/createUserInfo",
+          params: {
+            email: newUserData.email ?? "",
+            firstName: newUserData.firstName ?? "",
+            lastName: newUserData.lastName ?? "",
+          },
+        });
+      });
+
+      console.log("Google Sign-Up successful");
     } catch (error: any) {
-      console.log("Google Sign-In Error:", error);
-      Alert.alert("Google Sign-In Failed", error.message);
+      console.log("Google Sign-Up Error:", error);
+      Alert.alert("Google Sign-Up Failed", error.message);
     } finally {
       setLoading(false);
     }
@@ -208,6 +218,7 @@ const CreateAccount = () => {
             },
           ]}
           onPress={handleGooglePress}
+          disabled={!isGoogleButtonEnabled || loading}
         >
           <Image
             source={require("@/assets/images/google.png")}

@@ -19,7 +19,7 @@ export default function LoginScreen() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoginInvalid, setIsLoginInvalid] = useState(false);
 
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, googleSignIn } = useAuth();
   const navigation = useNavigation();
  
   const removeEmojis = (text: string) => {
@@ -57,11 +57,22 @@ export default function LoginScreen() {
   const handleGooglePress = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      await googleSignIn(); 
       router.replace("/(tabs)/profile");
     } catch (error: any) {
-      console.log("Google Sign-In Error:", error);
-      Alert.alert("Google Sign-In Failed", error.message);
+      console.error("Google Sign-In Error:", error);
+
+      if (
+        error.message?.includes("not registered") ||
+        error.message?.includes("Please use Sign Up instead")
+      ) {
+        Alert.alert(
+          "Account Not Found",
+          "This Google account isn’t registered. Please sign up first."
+        );
+      } else {
+        Alert.alert("Google Sign-In Failed", error.message || "Please try again.");
+      }
     } finally {
       setLoading(false);
     }

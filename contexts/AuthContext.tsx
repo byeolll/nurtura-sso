@@ -6,9 +6,11 @@ import {
   onAuthStateChanged,
   signInWithCredential,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  UserCredential,
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { router } from 'expo-router';
 
 export interface UserInfo {
   uid: string;
@@ -25,7 +27,8 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string) => Promise<{ user: any, token: string }>;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  googleSignIn: () => Promise<void>;
+  googleSignUp: (onNewUserRedirect?: (userData: UserInfo) => void) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -84,35 +87,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await signInWithEmailAndPassword(auth, email, password);
     };
 
-  const signInWithGoogle = async () => {
+  const googleSignIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const result = await GoogleSignin.signIn();
-      
       const idToken = result.data?.idToken;
       if (!idToken) throw new Error('No ID token returned from Google');
 
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
+      const additionalInfo = (userCredential as any).additionalUserInfo;
+
+      // pang check if existing
+      if (additionalInfo?.isNewUser) {
+        throw new Error('This account is not registered. Please use Sign Up instead.');
+      }
+
       const firebaseUser = userCredential.user;
-
-      //access permission prompt to sa google bday
-      // const accessToken = (await GoogleSignin.getTokens()).accessToken;
-      // let birthday: string | null = null;
-      // try {
-      //   const response = await fetch(
-      //     'https://people.googleapis.com/v1/people/me?personFields=birthdays',
-      //     { headers: { Authorization: `Bearer ${accessToken}` } }
-      //   );
-      //   const data = await response.json();
-      //   if (data.birthdays && data.birthdays.length > 0) {
-      //     const date = data.birthdays[0].date;
-      //     birthday = `${date.year || ''}-${date.month || ''}-${date.day || ''}`;
-      //   }
-      // } catch (err) {
-      //   console.log('Failed to fetch birthday:', err);
-      // }
-
       const displayName = firebaseUser.displayName || '';
       const [firstName, lastName] = displayName.split(' ');
 
@@ -123,10 +114,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         lastName: lastName || null,
         username: firebaseUser.email?.split('@')[0] || null,
         photo: firebaseUser.photoURL || null,
-        // birthday,
       });
+
     } catch (error) {
-      console.log('Google Sign-In Error:', error);
+      console.error('Google Sign-In Error:', error);
+      throw error;
+    }
+  };
+
+  const googleSignUp = async (onNewUserRedirect?: (userData: UserInfo) => void) => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const result = await GoogleSignin.signIn();
+      const idToken = result.data?.idToken;
+      if (!idToken) throw new Error('No ID token returned from Google');
+
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCredential = await signInWithCredential(auth, credential);
+      const additionalInfo = (userCredential as any).additionalUserInfo;
+      const firebaseUser = userCredential.user;
+
+      const displayName = firebaseUser.displayName || '';
+      const [firstName, lastName] = displayName.split(' ');
+
+      const userData: UserInfo = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        username: firebaseUser.email?.split('@')[0] || null,
+        photo: firebaseUser.photoURL || null,
+      };
+
+      if (additionalInfo?.isNewUser) {
+        console.log('New Google user detected, redirecting to createUserInfo...');
+        if (onNewUserRedirect) {
+          onNewUserRedirect(userData);
+        } else {
+          router.replace(`/(auth)/signup/createUserInfo?fromGoogle=true`);
+        }
+      } else {
+        console.log('User already exists, please sign in instead.');
+      }
+
+      setUser(userData);
+
+    } catch (error) {
+      console.error('Google Sign-Up Error:', error);
       throw error;
     }
   };
@@ -148,7 +182,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading,
         signUp,
         signIn,
-        signInWithGoogle,
+        googleSignIn,
+        googleSignUp,
         logout,
       }}
     >
