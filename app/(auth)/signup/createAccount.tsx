@@ -18,6 +18,7 @@ const CreateAccount = () => {
   const [email, setEmail] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+  const [isEmailUnique, setIsEmailUnique] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
 
@@ -41,6 +42,26 @@ const CreateAccount = () => {
     }
   };
 
+  const isEmailAlreadyRegistered = async (email: string) => {
+    try {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/check-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.status === 409) {
+        return true; // Email taken
+      }
+
+      return false; // Email available
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return true; // Fail-safe: treat as taken
+    }
+  };
+
+
   const handleEmailChange = (value: string) => { 
     const cleanText = removeEmojis(value);
     setEmail(cleanText);
@@ -55,15 +76,17 @@ const CreateAccount = () => {
   };
 
   const handleNextPress = async () => {
-    router.push({
-      pathname: "/(auth)/signup/emailOTP",
-      params: { email },
-    });
     if (!isNextButtonEnabled) return;
 
     setLoading(true);
 
     try {
+      const emailTaken = await isEmailAlreadyRegistered(email);
+
+      if (emailTaken) {
+        return Alert.alert("Error", "Email is already registered!");
+      }
+
       const otp = Math.floor(10000 + Math.random() * 90000);
       const currentTime = new Date();
       const expireTime = new Date(currentTime.getTime() + 15 * 60000);
@@ -75,8 +98,6 @@ const CreateAccount = () => {
       const EMAIL_BORDER_COLOR = emailError
         ? "border-red-500"
         : "border-[#919191]";
-
-      console.log("🔹 Fetching from:", `http://${LOCAL_IP}:${PORT}/send-otp`);
 
       const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
         method: "POST",

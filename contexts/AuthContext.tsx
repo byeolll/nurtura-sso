@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       webClientId: '871389551301-8d4an920eclthuah35lobfiqum80bnri.apps.googleusercontent.com', 
       offlineAccess: true, 
       forceCodeForRefreshToken: true, 
-      scopes: ['profile', 'email', 'https://www.googleapis.com/auth/user.birthday.read'],
+      scopes: ['profile', 'email'],
     });
   }, []);
 
@@ -97,21 +97,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const firebaseUser = userCredential.user;
 
       //access permission prompt to sa google bday
-      const accessToken = (await GoogleSignin.getTokens()).accessToken;
-      let birthday: string | null = null;
-      try {
-        const response = await fetch(
-          'https://people.googleapis.com/v1/people/me?personFields=birthdays',
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-        const data = await response.json();
-        if (data.birthdays && data.birthdays.length > 0) {
-          const date = data.birthdays[0].date;
-          birthday = `${date.year || ''}-${date.month || ''}-${date.day || ''}`;
-        }
-      } catch (err) {
-        console.log('Failed to fetch birthday:', err);
-      }
+      // const accessToken = (await GoogleSignin.getTokens()).accessToken;
+      // let birthday: string | null = null;
+      // try {
+      //   const response = await fetch(
+      //     'https://people.googleapis.com/v1/people/me?personFields=birthdays',
+      //     { headers: { Authorization: `Bearer ${accessToken}` } }
+      //   );
+      //   const data = await response.json();
+      //   if (data.birthdays && data.birthdays.length > 0) {
+      //     const date = data.birthdays[0].date;
+      //     birthday = `${date.year || ''}-${date.month || ''}-${date.day || ''}`;
+      //   }
+      // } catch (err) {
+      //   console.log('Failed to fetch birthday:', err);
+      // }
 
       const displayName = firebaseUser.displayName || '';
       const [firstName, lastName] = displayName.split(' ');
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         lastName: lastName || null,
         username: firebaseUser.email?.split('@')[0] || null,
         photo: firebaseUser.photoURL || null,
-        birthday,
+        // birthday,
       });
     } catch (error) {
       console.log('Google Sign-In Error:', error);

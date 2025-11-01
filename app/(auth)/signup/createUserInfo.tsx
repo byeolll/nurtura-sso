@@ -181,7 +181,7 @@ const createUserInfo = () => {
         firstName,
         lastName,
         email: normalizedEmail,
-        birthday: `${monthsList[selectedMonthIndex]} ${daysList[selectedDayIndex]}, ${yearsList[selectedYearIndex]}`,
+        birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, '0')}-${daysList[selectedDayIndex].toString().padStart(2, '0')}`,
       };
 
       console.log("Sending User Details:", userDetails);
@@ -203,7 +203,7 @@ const createUserInfo = () => {
       }
 
       if (response.status === 409) {
-        alert(data.message); // Username or Email taken
+        alert(data.message); // Username taken
         return;
       }
 
