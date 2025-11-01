@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -132,11 +132,14 @@ const createUserInfo = () => {
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
-  const { markProfileCreated } = useAuth();
+  const { signUp } = useAuth();
 
   const [loading, setLoading] = useState(false)
 
-  const { fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
+  const { email, password, fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
+
+  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
+  const normalizedPassword = Array.isArray(password) ? password[0] : password || "";
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -183,7 +186,9 @@ const createUserInfo = () => {
   const handleSubmitUserInfo = async () => {
     setLoading(true);
     try {
-      const token = await SecureStore.getItemAsync("firebaseToken");
+
+      const { token } = await signUp(normalizedEmail, normalizedPassword);
+
       if (!token) {
         Alert.alert("User not authenticated");
         return;
@@ -229,8 +234,6 @@ const createUserInfo = () => {
 
       Alert.alert("Success", "User profile saved!");
       await SecureStore.deleteItemAsync("firebaseToken");
-      markProfileCreated();
-      router.replace('/(tabs)');
     } catch (error) {
       console.log("Error submitting user info:", error);
       Alert.alert("Error", "Failed to submit user info");

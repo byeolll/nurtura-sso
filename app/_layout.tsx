@@ -5,7 +5,7 @@ import { ActivityIndicator, View } from 'react-native';
 import './globals.css';
 
 function RootLayoutNav() {
-  const { user, loading, profileExists } = useAuth();
+  const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -16,12 +16,10 @@ function RootLayoutNav() {
 
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/login');
-    } else if (user && profileExists === false) {
-      router.replace("/(auth)/signup/createUserInfo");
     } else if (user && inAuthGroup) {
       router.replace('/(tabs)/profile'); 
 }
-  }, [user, loading, segments, profileExists]);
+  }, [user, loading, segments ]);
 
   if (loading) {
     return (

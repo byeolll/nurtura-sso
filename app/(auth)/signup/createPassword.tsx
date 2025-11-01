@@ -1,6 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { useLocalSearchParams } from "expo-router";
-import * as SecureStore from "expo-secure-store";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -13,8 +11,6 @@ import {
 } from "react-native";
 
 const CreatePassword = () => {
-  const { signUp, markProfileNotCreated } = useAuth();
-
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -28,7 +24,6 @@ const CreatePassword = () => {
   const [passwordsMatch, setPasswordsMatch] = useState(false);
 
   const { email } = useLocalSearchParams();
-  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
 
   const [loading, setLoading] = useState(false); // for loading
 
@@ -87,10 +82,10 @@ const CreatePassword = () => {
 
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
       try {
-        const { user, token } = await signUp(normalizedEmail, password);
-        await SecureStore.setItemAsync("firebaseToken", token);
-        markProfileNotCreated();
-
+        router.push({
+          pathname: "/(auth)/signup/createUserInfo",
+          params: { email, password },
+        });
       } catch (error: any) {
         Alert.alert("Signup Failed", error.message);
         setLoading(false);
