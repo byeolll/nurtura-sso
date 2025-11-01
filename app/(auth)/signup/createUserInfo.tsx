@@ -1,3 +1,5 @@
+import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useMemo, useRef, useState } from "react";
 import {
   Dimensions,
@@ -128,6 +130,12 @@ const createUserInfo = () => {
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
+  const { email } = useLocalSearchParams();
+  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
+
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;
+
   // Memoize static data
   const monthsList = useMemo(
     () => [
@@ -160,15 +168,57 @@ const createUserInfo = () => {
     []
   );
 
-  const handleSubmitUserInfo = () => {
-    const userDetails = {
-      username: username,
-      firstName: firstName,
-      lastName: lastName,
-      birthday: `${monthsList[selectedMonthIndex]} ${daysList[selectedDayIndex]}, ${yearsList[selectedYearIndex]}`,
-    };
+  const handleSubmitUserInfo = async () => {
+    try {
+      const token = await SecureStore.getItemAsync("firebaseToken");
+      if (!token) {
+        alert("User not authenticated");
+        return;
+      }
 
-    console.log("User Details:", userDetails);
+      const userDetails = {
+        username,
+        firstName,
+        lastName,
+        email: normalizedEmail,
+        birthday: `${monthsList[selectedMonthIndex]} ${daysList[selectedDayIndex]}, ${yearsList[selectedYearIndex]}`,
+      };
+
+      console.log("Sending User Details:", userDetails);
+
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userDetails),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        alert(data.message); // Unauthorized Token/Access
+        return;
+      }
+
+      if (response.status === 409) {
+        alert(data.message); // Username or Email taken
+        return;
+      }
+
+      if (!response.ok) {
+        alert("Registration failed");
+        return;
+      }
+
+      alert("User profile saved!");
+      await SecureStore.deleteItemAsync("firebaseToken");
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.log("Error submitting user info:", error);
+      alert("Failed to submit user info");
+    }
   };
 
   const checkIfUsernameHasValue = username.trim().length > 0;

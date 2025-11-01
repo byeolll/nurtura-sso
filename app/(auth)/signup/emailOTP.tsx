@@ -118,7 +118,7 @@ const EmailOTP = () => {
           minute: "2-digit",
         });
 
-        const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

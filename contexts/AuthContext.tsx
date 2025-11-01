@@ -1,15 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  User,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithCredential
-} from 'firebase/auth';
 import { auth } from '@/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import {
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithCredential,
+  signInWithEmailAndPassword,
+  signOut
+} from 'firebase/auth';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface UserInfo {
   uid: string;
@@ -24,7 +23,7 @@ export interface UserInfo {
 interface AuthContextType {
   user: UserInfo | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<{ user: any, token: string }>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
@@ -71,7 +70,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      const token = await userCredential.user.getIdToken();
+
+      return{
+        user: userCredential.user,
+        token
+      }
     };
 
   const signIn = async (email: string, password: string) => {
