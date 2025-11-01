@@ -1,12 +1,15 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 const ForgotPassword1 = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [email, setEmail] = React.useState("");
+
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -34,8 +37,78 @@ const ForgotPassword1 = () => {
     }
   };
 
+  const isEmailAlreadyRegistered = async (email: string) => {
+    try {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/check-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.status === 409) {
+        return true; // Email taken
+      }
+
+      return false; // Email available
+    } catch (error) {
+      console.error("Error checking email:", error);
+      return true; // Fail-safe: treat as taken
+    }
+  };
+
   const handleNextPress = async () => {
-    router.push("/(auth)/forgetpassword/forgotPassword2");
+    if (!isNextButtonEnabled) return;
+
+    setLoading(true);
+
+    try {
+      const emailTaken = await isEmailAlreadyRegistered(email);
+
+      if (!emailTaken) {
+        return Alert.alert("Error", "Email is not registered!");
+      }
+
+      const otp = Math.floor(10000 + Math.random() * 90000);
+      const currentTime = new Date();
+      const expireTime = new Date(currentTime.getTime() + 15 * 60000);
+      const formattedTime = expireTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const EMAIL_BORDER_COLOR = emailError
+        ? "border-red-500"
+        : "border-[#919191]";
+
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/forgot-password-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          code: otp,
+          time: formattedTime,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Success", "OTP has been sent to your email.");
+        console.log("Email sent successfully:", result);
+        router.push({
+          pathname: "/(auth)/forgetpassword/forgotPassword2",
+          params: { email },
+        });
+      } else {
+        Alert.alert("Error", result.message || "Failed to send OTP.");
+        console.error(result.error);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      Alert.alert("Error", "Unable to send OTP. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

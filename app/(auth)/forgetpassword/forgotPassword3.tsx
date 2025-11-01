@@ -10,6 +10,9 @@ import {
 } from "react-native";
 
 const ForgotPassword3 = () => {
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;
+
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -75,26 +78,27 @@ const ForgotPassword3 = () => {
 
   // sa next press lang
   const handleNextPress = async () => {
-    console.log("Next button pressed!");
-    router.push("/(auth)/signup/createUserInfo");
-    //   if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
-    //     try {
-    //     console.log("🔹 Attempting Firebase sign-up with:", email);
+    const changePassword = async (email: string, newPassword: string) => {
+      try {
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/reset-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, newPassword }),
+        });
 
-    //     const userCredential = await createUserWithEmailAndPassword(
-    //       auth,
-    //       normalizedEmail,
-    //       password
-    //     );
-    //     console.log("User created successfully:", userCredential.user.uid);
-    //     router.replace("/(tabs)/profile");
-    //   } catch (error:any) {
-    //     console.error("Firebase sign-up error:", error);
-    //     Alert.alert("Sign Up Failed", error.message);
-    //   }
-    //   }else {
-    //     Alert.alert("Invalid Password", "Please check your inputs again.");
-    //   }
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.log("Error:", result.message);
+          return { success: false, message: result.message };
+        }
+
+        router.replace('/(tabs)');
+      } catch (error) {
+        console.log("Network error:", error);
+        return { success: false, message: "Network error" };
+      }
+    };
   };
 
   // togge lang
