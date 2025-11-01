@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();

@@ -1,6 +1,9 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   Text,
   TextInput,
@@ -10,6 +13,8 @@ import {
 } from "react-native";
 
 const CreatePassword = () => {
+  const { signUp } = useAuth();
+
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -77,24 +82,22 @@ const CreatePassword = () => {
   const handleNextPress = async () => {
     console.log("Next button pressed!");
     router.push("/(auth)/signup/createUserInfo");
-    //   if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
-    //     try {
-    //     console.log("🔹 Attempting Firebase sign-up with:", email);
+      if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
+        
+        try {
+          const { user, token } = await signUp(normalizedEmail, password);
+          await SecureStore.setItemAsync("firebaseToken", token);
 
-    //     const userCredential = await createUserWithEmailAndPassword(
-    //       auth,
-    //       normalizedEmail,
-    //       password
-    //     );
-    //     console.log("User created successfully:", userCredential.user.uid);
-    //     router.replace("/(tabs)/profile");
-    //   } catch (error:any) {
-    //     console.error("Firebase sign-up error:", error);
-    //     Alert.alert("Sign Up Failed", error.message);
-    //   }
-    //   }else {
-    //     Alert.alert("Invalid Password", "Please check your inputs again.");
-    //   }
+          router.push({
+            pathname: "/(auth)/signup/createUserInfo",
+            params: { email },
+          });
+        } catch (error: any) {
+          Alert.alert('Signup Failed', error.message);
+        }
+      }else {
+        Alert.alert("Invalid Password", "Please check your inputs again.");
+      }
   };
 
   // togge lang
@@ -138,8 +141,6 @@ const CreatePassword = () => {
               autoCapitalize="none"
               value={password}
               onChangeText={(text) => setPassword(text)}
-              contextMenuHidden={true}
-              textContentType="oneTimeCode"
             />
           </View>
 
@@ -187,8 +188,6 @@ const CreatePassword = () => {
               autoCapitalize="none"
               value={confirmPassword}
               onChangeText={(text) => setConfirmPassword(text)}
-              contextMenuHidden={true}
-              textContentType="oneTimeCode"
             />
           </View>
 
