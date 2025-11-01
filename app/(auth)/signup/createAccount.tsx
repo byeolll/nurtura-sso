@@ -43,11 +43,14 @@ const CreateAccount = () => {
 
   const isEmailAlreadyRegistered = async (email: string) => {
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/check-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/users/check-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
 
       if (response.status === 409) {
         return true; // Email taken
@@ -60,8 +63,7 @@ const CreateAccount = () => {
     }
   };
 
-
-  const handleEmailChange = (value: string) => { 
+  const handleEmailChange = (value: string) => {
     const cleanText = removeEmojis(value);
     setEmail(cleanText);
     validateEmail(cleanText);
@@ -75,6 +77,10 @@ const CreateAccount = () => {
   };
 
   const handleNextPress = async () => {
+    router.push({
+      pathname: "/(auth)/signup/emailOTP",
+      params: { email },
+    });
     if (!isNextButtonEnabled) return;
 
     setLoading(true);
@@ -98,15 +104,18 @@ const CreateAccount = () => {
         ? "border-red-500"
         : "border-[#919191]";
 
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          code: otp,
-          time: formattedTime,
-        }),
-      });
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/email-service/send-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            code: otp,
+            time: formattedTime,
+          }),
+        }
+      );
 
       const result = await response.json();
 
@@ -134,7 +143,6 @@ const CreateAccount = () => {
 
     setLoading(true);
     try {
-    
       await googleSignUp((newUserData) => {
         console.log("New user detected:", newUserData);
         router.push({
@@ -182,7 +190,7 @@ const CreateAccount = () => {
             value={email}
           />
         </View>
- 
+
         {emailError.length > 0 && (
           <Text className="text-[#E65656] text-[13px] mt-1 pl-2">
             {emailError}
@@ -284,7 +292,7 @@ const CreateAccount = () => {
           disabled={!isNextButtonEnabled || loading}
         >
           <Text className="text-white text-[16px] font-bold">
-            {loading ? "Sending..." : "Next"}
+            {loading ? "Loading..." : "Next"}
           </Text>
         </TouchableOpacity>
       </View>
