@@ -81,7 +81,7 @@ const CreatePassword = () => {
   // sa next press lang
   const handleNextPress = async () => {
     console.log("Next button pressed!");
-    router.push("/(auth)/signup/createUserInfo");
+    
       if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
         
         try {
