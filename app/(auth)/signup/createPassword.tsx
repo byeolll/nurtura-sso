@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
@@ -29,6 +29,8 @@ const CreatePassword = () => {
 
   const { email } = useLocalSearchParams();
   const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
+
+  const [loading, setLoading] = useState(false); // for loading
 
   // pang-enable lang sa Next button
   const isNextButtonEnabled =
@@ -81,23 +83,24 @@ const CreatePassword = () => {
   // sa next press lang
   const handleNextPress = async () => {
     console.log("Next button pressed!");
-    
-      if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
-        
-        try {
-          const { user, token } = await signUp(normalizedEmail, password);
-          await SecureStore.setItemAsync("firebaseToken", token);
+    setLoading(true);
 
-          router.push({
-            pathname: "/(auth)/signup/createUserInfo",
-            params: { email },
-          });
-        } catch (error: any) {
-          Alert.alert('Signup Failed', error.message);
-        }
-      }else {
-        Alert.alert("Invalid Password", "Please check your inputs again.");
+    if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
+      try {
+        const { user, token } = await signUp(normalizedEmail, password);
+        await SecureStore.setItemAsync("firebaseToken", token);
+
+        router.push({
+          pathname: "/(auth)/signup/createUserInfo",
+          params: { email },
+        });
+      } catch (error: any) {
+        Alert.alert("Signup Failed", error.message);
+        setLoading(false);
       }
+    } else {
+      Alert.alert("Invalid Password", "Please check your inputs again.");
+    }
   };
 
   // togge lang
@@ -191,7 +194,6 @@ const CreatePassword = () => {
             />
           </View>
 
-          {/* ⚠️ Confirm password error messages */}
           {!passwordsMatch && confirmPassword.length > 0 && (
             <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
               Passwords do not match.
@@ -230,7 +232,7 @@ const CreatePassword = () => {
           }`}
           disabled={!isNextButtonEnabled}
         >
-          <Text className="text-white text-[16px] font-bold">Next</Text>
+          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Next" }</Text>
         </TouchableOpacity>
       </View>
     </View>

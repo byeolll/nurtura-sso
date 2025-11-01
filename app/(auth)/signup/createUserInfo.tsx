@@ -131,6 +131,8 @@ const createUserInfo = () => {
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
+  const [loading, setLoading] = useState(false)
+
   const { email, fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
   const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
 
@@ -177,6 +179,7 @@ const createUserInfo = () => {
   );
 
   const handleSubmitUserInfo = async () => {
+    setLoading(true);
     try {
       const token = await SecureStore.getItemAsync("firebaseToken");
       if (!token) {
@@ -207,16 +210,19 @@ const createUserInfo = () => {
 
       if (response.status === 401) {
         alert(data.message); // Unauthorized Token/Access
+        setLoading(false);
         return;
       }
 
       if (response.status === 409) {
         alert(data.message); // Username taken
+        setLoading(false);
         return;
       }
 
       if (!response.ok) {
         alert("Registration failed");
+        setLoading(false);
         return;
       }
 
@@ -226,6 +232,7 @@ const createUserInfo = () => {
     } catch (error) {
       console.log("Error submitting user info:", error);
       Alert.alert("Error", "Failed to submit user info");
+      setLoading(false);
     }
   };
 
@@ -394,7 +401,7 @@ const createUserInfo = () => {
             areAllFieldsFilled ? "bg-primary" : "bg-[#919191]"
           } items-center`}
         >
-          <Text className="text-white text-[16px] font-bold">Next</Text>
+          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Finish"}</Text>
         </TouchableOpacity>
       </View>
     </View>

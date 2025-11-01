@@ -36,16 +36,24 @@ const EmailOTP = () => {
   // checker if all inputs ay filled
   const allFilled = otp.every((v) => v !== "");
 
+  const [loading, setLoading] = useState(false);  // for loading
+
+
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
-  const handleNextPress = async () => { 
+  const handleNextPress = async () => {
     const code = otp.join("");
+    
+    setLoading(true);
 
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code, purpose: "registration" }),
-      });
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/email-service/verify-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code, purpose: "registration" }),
+        }
+      );
 
       const result = await response.json();
 
@@ -62,6 +70,7 @@ const EmailOTP = () => {
     } catch (error) {
       console.log("Error verifying OTP:", error);
       alert("Network error. Try again.");
+      setLoading(false);
     }
   };
 
@@ -118,15 +127,18 @@ const EmailOTP = () => {
           minute: "2-digit",
         });
 
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/send-otp`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            code: otp,
-            time: formattedTime,
-          }),
-        });
+        const response = await fetch(
+          `http://${LOCAL_IP}:${PORT}/email-service/send-otp`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              code: otp,
+              time: formattedTime,
+            }),
+          }
+        );
 
         const result = await response.json();
 
@@ -137,7 +149,6 @@ const EmailOTP = () => {
           Alert.alert("Error", result.message || "Failed to resend OTP.");
           console.error(result.error);
         }
-
       } catch (error) {
         console.error("Error sending OTP:", error);
         Alert.alert("Error", "Unable to send OTP. Please try again later.");
@@ -211,7 +222,7 @@ const EmailOTP = () => {
           }`}
           disabled={!allFilled}
         >
-          <Text className="text-white text-[16px] font-bold">Next</Text>
+          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Next"}</Text>
         </TouchableOpacity>
       </View>
     </View>
