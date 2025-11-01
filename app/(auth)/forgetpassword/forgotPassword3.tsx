@@ -14,6 +14,15 @@ const ForgotPassword3 = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
+  const cleanInput = (text: string) => {
+    return text
+      .replace(/\s/g, "") // remove spaces
+      .replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+        ""
+      ); // remove emojis
+  };
+
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -84,31 +93,36 @@ const ForgotPassword3 = () => {
     setLoading(true);
 
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
-            
       try {
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/reset-password`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, newPassword: password }),
-        });
+        const response = await fetch(
+          `http://${LOCAL_IP}:${PORT}/users/reset-password`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, newPassword: password }),
+          }
+        );
 
         const result = await response.json();
 
         if (!response.ok) {
           console.log("Error:", result.message);
           setLoading(false);
-          return Alert.alert("Error", "An error occured when resetting the password.");
+          return Alert.alert(
+            "Error",
+            "An error occured when resetting the password."
+          );
         }
-        
+
         Alert.alert("Success", "Password has been reset.");
-        router.replace('/(auth)/login');
+        router.replace("/(auth)/login");
         setLoading(false);
       } catch (error) {
         console.log("Network error:", error);
         setLoading(false);
         return { success: false, message: "Network error" };
       }
-    };
+    }
   };
 
   // togge lang
@@ -151,7 +165,7 @@ const ForgotPassword3 = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={(text) => setPassword(text)}
+              onChangeText={(text) => setPassword(cleanInput(text))}
               contextMenuHidden={true}
               selectTextOnFocus={false}
             />
@@ -200,13 +214,12 @@ const ForgotPassword3 = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={confirmPassword}
-              onChangeText={(text) => setConfirmPassword(text)}
+              onChangeText={(text) => setConfirmPassword(cleanInput(text))}
               contextMenuHidden={true}
               selectTextOnFocus={false}
             />
           </View>
 
-          {/* ⚠️ Confirm password error messages */}
           {!passwordsMatch && confirmPassword.length > 0 && (
             <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
               Passwords do not match.
@@ -245,7 +258,9 @@ const ForgotPassword3 = () => {
           }`}
           disabled={!isNextButtonEnabled}
         >
-          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Finish"}</Text>
+          <Text className="text-white text-[16px] font-bold">
+            {loading ? "Loading..." : "Finish"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

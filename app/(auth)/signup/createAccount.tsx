@@ -1,8 +1,10 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { router } from "expo-router";
-import { useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
+  BackHandler,
   Image,
   Text,
   TextInput,
@@ -10,6 +12,9 @@ import {
   View,
 } from "react-native";
 import "../../globals.css";
+
+import { USER_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createUserInfo"; // info ni user galing sa createUserInfo passward passward passward
+import { useFocusEffect } from "@react-navigation/native";
 
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -22,6 +27,48 @@ const CreateAccount = () => {
   const [emailError, setEmailError] = useState("");
 
   const { googleSignUp } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        Alert.alert("Go back?", "Your process will be deleted and cleared.", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: async () => {
+              await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY); // user info i2
+              await SecureStore.deleteItemAsync("signup_password"); // passward
+              await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
+              await SecureStore.deleteItemAsync("verified_email"); // Clear verification
+              await SecureStore.deleteItemAsync("signup_email"); // Clear saved emai
+              router.back();
+            },
+          },
+        ]);
+        return true; // prevent default back action
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [])
+  );
+
+  // Load saved email when component mounts
+  useEffect(() => {
+    const loadSavedEmail = async () => {
+      const savedEmail = await SecureStore.getItemAsync("signup_email");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        validateEmail(savedEmail);
+      }
+    };
+    loadSavedEmail();
+  }, []);
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -64,7 +111,7 @@ const CreateAccount = () => {
   };
 
   const handleEmailChange = (value: string) => {
-    const cleanText = removeEmojis(value);
+    const cleanText = removeEmojis(value.replace(/\s/g, ""));
     setEmail(cleanText);
     validateEmail(cleanText);
   };
@@ -82,9 +129,33 @@ const CreateAccount = () => {
     setLoading(true);
 
     try {
+      const savedEmail = await SecureStore.getItemAsync("signup_email");
+      const verifiedEmail = await SecureStore.getItemAsync("verified_email");
+
+      if (savedEmail && savedEmail !== email) {
+        console.log("Email changed from", savedEmail, "to", email);
+        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+        await SecureStore.deleteItemAsync("signup_password");
+        await SecureStore.deleteItemAsync("signup_confirm_password");
+        await SecureStore.deleteItemAsync("verified_email");
+      }
+
+      await SecureStore.setItemAsync("signup_email", email);
+
+      if (verifiedEmail === email) {
+        console.log("Email already verified, skipping OTP");
+        router.push({
+          pathname: "/(auth)/signup/createPassword",
+          params: { email },
+        });
+        setLoading(false);
+        return;
+      }
+
       const emailTaken = await isEmailAlreadyRegistered(email);
 
       if (emailTaken) {
+        setLoading(false);
         return Alert.alert("Error", "Email is already registered!");
       }
 
@@ -95,10 +166,6 @@ const CreateAccount = () => {
         hour: "2-digit",
         minute: "2-digit",
       });
-
-      const EMAIL_BORDER_COLOR = emailError
-        ? "border-red-500"
-        : "border-[#919191]";
 
       const response = await fetch(
         `http://${LOCAL_IP}:${PORT}/email-service/send-otp`,
@@ -125,6 +192,7 @@ const CreateAccount = () => {
       } else {
         Alert.alert("Error", result.message || "Failed to send OTP.");
         console.error(result.error);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -149,6 +217,7 @@ const CreateAccount = () => {
             lastName: newUserData.lastName ?? "",
           },
         });
+        setLoading(false);
       });
 
       console.log("Google Sign-Up successful");

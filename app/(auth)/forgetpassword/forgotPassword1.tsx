@@ -11,17 +11,19 @@ const ForgotPassword1 = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
-  const removeEmojis = (text: string) => {
-    return text.replace(
-      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
-      ""
-    );
+  const cleanInput = (text: string) => {
+    return text
+      .replace(/\s/g, "") // remove spaces
+      .replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+        ""
+      ); // remove emojis
   };
 
   const isNextButtonEnabled = email.length > 0 && isEmailValid;
 
   const handleEmailChange = (value: string) => {
-    const cleanValue = removeEmojis(value);
+    const cleanValue = cleanInput(value);
     setEmail(cleanValue);
     validateEmail(cleanValue);
   };
@@ -39,11 +41,14 @@ const ForgotPassword1 = () => {
 
   const isEmailAlreadyRegistered = async (email: string) => {
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/check-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/users/check-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
 
       if (response.status === 409) {
         return true; // Email taken
@@ -52,7 +57,7 @@ const ForgotPassword1 = () => {
       return false; // Email available
     } catch (error) {
       console.error("Error checking email:", error);
-      throw error; 
+      throw error;
     }
   };
 
@@ -80,15 +85,18 @@ const ForgotPassword1 = () => {
         ? "border-red-500"
         : "border-[#919191]";
 
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          code: otp,
-          time: formattedTime,
-        }),
-      });
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            code: otp,
+            time: formattedTime,
+          }),
+        }
+      );
 
       const result = await response.json();
 
@@ -132,7 +140,7 @@ const ForgotPassword1 = () => {
             keyboardType="email-address"
             autoCapitalize="none"
             onChangeText={handleEmailChange}
-            value={email}
+            value={email} 
           />
         </View>
 
