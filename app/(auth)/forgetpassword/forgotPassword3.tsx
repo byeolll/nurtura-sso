@@ -14,6 +14,15 @@ const ForgotPassword3 = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
+  const cleanInput = (text: string) => {
+    return text
+      .replace(/\s/g, "") // remove spaces
+      .replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+        ""
+      ); // remove emojis
+  };
+
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -156,7 +165,7 @@ const ForgotPassword3 = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={(text) => setPassword(text.replace(/\s/g, ""))} // ⛔ removes spaces
+              onChangeText={(text) => setPassword(cleanInput(text))}
               contextMenuHidden={true}
               selectTextOnFocus={false}
             />
@@ -205,14 +214,12 @@ const ForgotPassword3 = () => {
               keyboardType="default"
               autoCapitalize="none"
               value={confirmPassword}
-              onChangeText={(text) =>
-                setConfirmPassword(text.replace(/\s/g, ""))
-              }
+              onChangeText={(text) => setConfirmPassword(cleanInput(text))}
               contextMenuHidden={true}
               selectTextOnFocus={false}
             />
           </View>
- 
+
           {!passwordsMatch && confirmPassword.length > 0 && (
             <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
               Passwords do not match.

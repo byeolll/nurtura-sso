@@ -21,17 +21,22 @@ export default function LoginScreen() {
 
   const { signIn, googleSignIn } = useAuth();
   const navigation = useNavigation();
- 
-  const removeEmojis = (text: string) => {
-    return text.replace(
-      /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
-      ""
-    );
+
+  const cleanInput = (text: string) => {
+    return text
+      .replace(/\s/g, "")  
+      .replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
+        ""
+      );  
   };
- 
+
   const handleEmailChange = (value: string) => {
-    const cleanText = removeEmojis(value);
-    setEmail(cleanText);
+    setEmail(cleanInput(value));
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(cleanInput(value));
   };
 
   const handleLogin = async () => {
@@ -57,7 +62,7 @@ export default function LoginScreen() {
   const handleGooglePress = async () => {
     setLoading(true);
     try {
-      await googleSignIn(); 
+      await googleSignIn();
       router.replace("/(tabs)/profile");
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
@@ -71,7 +76,10 @@ export default function LoginScreen() {
           "This Google account isn’t registered. Please sign up first."
         );
       } else {
-        Alert.alert("Google Sign-In Failed", error.message || "Please try again.");
+        Alert.alert(
+          "Google Sign-In Failed",
+          error.message || "Please try again."
+        );
       }
     } finally {
       setLoading(false);
@@ -90,7 +98,7 @@ export default function LoginScreen() {
         resizeMode="contain"
       />
 
-      <View className="w-full mb-4 relative -top-[25%]"> 
+      <View className="w-full mb-4 relative -top-[25%]">
         <View
           className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
             isLoginInvalid ? "border-[#E65656]" : "border-[#919191]"
@@ -106,9 +114,11 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            contextMenuHidden={true}
+            selectTextOnFocus={false}
           />
         </View>
- 
+
         <View className="relative w-full mb-[5px]">
           <View
             className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
@@ -124,9 +134,7 @@ export default function LoginScreen() {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={setPassword} 
-              contextMenuHidden={true}
-              selectTextOnFocus={false}
+              onChangeText={handlePasswordChange}   
             />
           </View>
 
@@ -151,19 +159,17 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
           </TouchableOpacity>
-
-          
         </View>
         <Text className="ml-2">
-            Forgot password?{" "}
-            <Text
-              className="text-primary underline font-bold"
-              onPress={handleForgotPassword}
-            >
-              Reset here.
-            </Text>
+          Forgot password?{" "}
+          <Text
+            className="text-primary underline font-bold"
+            onPress={handleForgotPassword}
+          >
+            Reset here.
           </Text>
- 
+        </Text>
+
         <View className="flex-row items-center my-6 mb-[25px] w-full">
           <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />
           <Text className="text-black text-[13px]">or</Text>
