@@ -41,10 +41,10 @@ const EmailOTP = () => {
     const code = otp.join("");
 
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/verify-otp`, {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, purpose: "registration" }),
       });
 
       const result = await response.json();
@@ -118,17 +118,26 @@ const EmailOTP = () => {
           minute: "2-digit",
         });
 
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/send-otp`, {
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/send-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
-            passcode: otp,
+            code: otp,
             time: formattedTime,
           }),
         });
 
-        console.log("OTP resent");
+        const result = await response.json();
+
+        if (response.ok) {
+          Alert.alert("Success", "OTP has been resent to your email.");
+          console.log("OTP resent", result);
+        } else {
+          Alert.alert("Error", result.message || "Failed to resend OTP.");
+          console.error(result.error);
+        }
+
       } catch (error) {
         console.error("Error sending OTP:", error);
         Alert.alert("Error", "Unable to send OTP. Please try again later.");

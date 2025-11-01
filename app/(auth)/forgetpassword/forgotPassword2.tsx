@@ -1,141 +1,150 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    NativeSyntheticEvent,
-    Text,
-    TextInput,
-    TextInputKeyPressEventData,
-    TouchableOpacity,
-    View
+  Alert,
+  NativeSyntheticEvent,
+  Text,
+  TextInput,
+  TextInputKeyPressEventData,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const ForgotPassword2 = () => {
 
-    const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
-      const PORT = process.env.EXPO_PUBLIC_PORT;
-    
-      const [otp, setOtp] = useState(["", "", "", "", ""]);
-      const inputs = useRef<Array<TextInput | null>>([]);
-      const { email } = useLocalSearchParams();
-    
-      const [isOtpInvalid, setIsOtpInvalid] = useState(false); // for styling if otp is invalid hihiz
-    
-      // input function, para auto next once mag type ng number
-      const handleChange = (text: string, index: number) => {
-        if (/^\d*$/.test(text)) {
-          const newOtp = [...otp];
-          newOtp[index] = text;
-          setOtp(newOtp);
-          if (text && index < 4) {
-            inputs.current[index + 1]?.focus();
-          }
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;
+
+  const [otp, setOtp] = useState(["", "", "", "", ""]);
+  const inputs = useRef<Array<TextInput | null>>([]);
+  const { email } = useLocalSearchParams();
+
+  const [isOtpInvalid, setIsOtpInvalid] = useState(false); // for styling if otp is invalid hihiz
+
+  // input function, para auto next once mag type ng number
+  const handleChange = (text: string, index: number) => {
+    if (/^\d*$/.test(text)) {
+      const newOtp = [...otp];
+      newOtp[index] = text;
+      setOtp(newOtp);
+      if (text && index < 4) {
+        inputs.current[index + 1]?.focus();
+      }
+    }
+  };
+
+  // checker if all inputs ay filled
+  const allFilled = otp.every((v) => v !== "");
+
+  // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
+  const handleNextPress = async () => {
+    const code = otp.join("");
+
+    try {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code, purpose: "forgot-password" }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("OTP Verified", result);
+        router.push({
+          pathname: "/(auth)/forgetpassword/forgotPassword3",
+          params: { email },
+        });
+      } else {
+        setIsOtpInvalid(true);
+        console.error(result.error);
+      }
+    } catch (error) {
+      console.log("Error verifying OTP:", error);
+      alert("Network error. Try again.");
+    }
+  };
+
+  // para mag backspace sa input
+  const handleKeyPress = (
+    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
+    index: number
+  ) => {
+    if (e.nativeEvent.key === "Backspace") {
+      if (otp[index] === "" && index > 0) {
+        const newOtp = [...otp];
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        inputs.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  // para mag focus sa first empty input
+  const handleFocus = () => {
+    const firstEmpty = otp.findIndex((v) => v === "");
+    if (firstEmpty !== -1) {
+      inputs.current[firstEmpty]?.focus();
+    }
+  };
+
+  const [timer, setTimer] = useState(0); // in seconds
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
+
+  // pwede dito ipasok yung mangyayari once nag click ng resend
+  const handleResendPress = async () => {
+    if (timer === 0) {
+      console.log("Resend clicked");
+      setTimer(30); // start 30s cooldown
+
+      try {
+        const otp = Math.floor(10000 + Math.random() * 90000);
+        const currentTime = new Date();
+        const expireTime = new Date(currentTime.getTime() + 15 * 60000);
+        const formattedTime = expireTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            code: otp,
+            time: formattedTime,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          Alert.alert("Success", "OTP has been resent to your email.");
+          console.log("OTP resent", result);
+        } else {
+          Alert.alert("Error", result.message || "Failed to resend OTP.");
+          console.error(result.error);
         }
-      };
-    
-      // checker if all inputs ay filled
-      const allFilled = otp.every((v) => v !== "");
-    
-      // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
-      const handleNextPress = async () => {
-        router.push('/(auth)/forgetpassword/forgotPassword3');
-        // const code = otp.join("");
-    
-        // try {
-        //   const response = await fetch(`http://${LOCAL_IP}:${PORT}/verify-otp`, {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({ email, code }),
-        //   });
-    
-        //   const result = await response.json();
-    
-        //   if (response.ok) {
-        //     console.log("OTP Verified");
-        //     router.push({
-        //       pathname: "/(auth)/signup/createPassword",
-        //       params: { email },
-        //     });
-        //   } else {
-        //     setIsOtpInvalid(true);
-        //     console.log("Invalid OTP");
-        //   }
-        // } catch (error) {
-        //   console.log("Error verifying OTP:", error);
-        //   alert("Network error. Try again.");
-        // }
-      };
-    
-      // para mag backspace sa input
-      const handleKeyPress = (
-        e: NativeSyntheticEvent<TextInputKeyPressEventData>,
-        index: number
-      ) => {
-        if (e.nativeEvent.key === "Backspace") {
-          if (otp[index] === "" && index > 0) {
-            const newOtp = [...otp];
-            newOtp[index - 1] = "";
-            setOtp(newOtp);
-            inputs.current[index - 1]?.focus();
-          }
-        }
-      };
-    
-      // para mag focus sa first empty input
-      const handleFocus = () => {
-        const firstEmpty = otp.findIndex((v) => v === "");
-        if (firstEmpty !== -1) {
-          inputs.current[firstEmpty]?.focus();
-        }
-      };
-    
-      const [timer, setTimer] = useState(0); // in seconds
-    
-      useEffect(() => {
-        let interval: ReturnType<typeof setInterval> | undefined;
-        if (timer > 0) {
-          interval = setInterval(() => {
-            setTimer((prev) => prev - 1);
-          }, 1000);
-        }
-    
-        return () => {
-          if (interval) clearInterval(interval);
-        };
-      }, [timer]);
-    
-      // pwede dito ipasok yung mangyayari once nag click ng resend
-      const handleResendPress = async () => {
-        if (timer === 0) {
-          console.log("Resend clicked");
-          setTimer(30); // start 30s cooldown
-    
-          try {
-            const otp = Math.floor(10000 + Math.random() * 90000);
-            const currentTime = new Date();
-            const expireTime = new Date(currentTime.getTime() + 15 * 60000);
-            const formattedTime = expireTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-    
-            const response = await fetch("http://${LOCAL_IP}:${PORT}/send-otp", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email,
-                passcode: otp,
-                time: formattedTime,
-              }),
-            });
-    
-            console.log("OTP resent");
-          } catch (error) {
-            console.error("Error sending OTP:", error);
-            Alert.alert("Error", "Unable to send OTP. Please try again later.");
-          }
-        }
-      };
+
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        Alert.alert("Error", "Unable to send OTP. Please try again later.");
+      }
+    }
+  };
+
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
           <View className="mt-[34px] flex-1 items-start">
