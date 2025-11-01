@@ -26,6 +26,8 @@ const ForgotPassword3 = () => {
   const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const { email } = useLocalSearchParams();
   const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
 
@@ -79,6 +81,7 @@ const ForgotPassword3 = () => {
 
   // sa next press lang
   const handleNextPress = async () => {
+    setLoading(true);
 
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
             
@@ -93,13 +96,16 @@ const ForgotPassword3 = () => {
 
         if (!response.ok) {
           console.log("Error:", result.message);
+          setLoading(false);
           return Alert.alert("Error", "An error occured when resetting the password.");
         }
         
         Alert.alert("Success", "Password has been reset.");
         router.replace('/(auth)/login');
+        setLoading(false);
       } catch (error) {
         console.log("Network error:", error);
+        setLoading(false);
         return { success: false, message: "Network error" };
       }
     };
@@ -239,7 +245,7 @@ const ForgotPassword3 = () => {
           }`}
           disabled={!isNextButtonEnabled}
         >
-          <Text className="text-white text-[16px] font-bold">Next</Text>
+          <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Finish"}</Text>
         </TouchableOpacity>
       </View>
     </View>

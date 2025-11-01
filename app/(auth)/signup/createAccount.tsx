@@ -77,10 +77,6 @@ const CreateAccount = () => {
   };
 
   const handleNextPress = async () => {
-    router.push({
-      pathname: "/(auth)/signup/emailOTP",
-      params: { email },
-    });
     if (!isNextButtonEnabled) return;
 
     setLoading(true);

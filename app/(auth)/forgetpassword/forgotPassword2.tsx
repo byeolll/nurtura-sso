@@ -19,6 +19,8 @@ const ForgotPassword2 = () => {
   const inputs = useRef<Array<TextInput | null>>([]);
   const { email } = useLocalSearchParams();
 
+  const [loading, setLoading] = useState(false);
+
   const [isOtpInvalid, setIsOtpInvalid] = useState(false); // for styling if otp is invalid hihiz
 
   // input function, para auto next once mag type ng number
@@ -39,6 +41,7 @@ const ForgotPassword2 = () => {
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
   const handleNextPress = async () => {
     const code = otp.join("");
+    setLoading(true);
 
     try {
       const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/verify-otp`, {
@@ -62,6 +65,7 @@ const ForgotPassword2 = () => {
     } catch (error) {
       console.log("Error verifying OTP:", error);
       alert("Network error. Try again.");
+      setLoading(false);
     }
   };
 
@@ -211,7 +215,7 @@ const ForgotPassword2 = () => {
               }`}
               disabled={!allFilled}
             >
-              <Text className="text-white text-[16px] font-bold">Next</Text>
+              <Text className="text-white text-[16px] font-bold">{loading ? "Loading..." : "Next"}</Text>
             </TouchableOpacity>
           </View>
         </View>

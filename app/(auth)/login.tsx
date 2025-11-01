@@ -152,7 +152,9 @@ export default function LoginScreen() {
             />
           </TouchableOpacity>
 
-          <Text className="ml-2">
+          
+        </View>
+        <Text className="ml-2">
             Forgot password?{" "}
             <Text
               className="text-primary underline font-bold"
@@ -161,7 +163,6 @@ export default function LoginScreen() {
               Reset here.
             </Text>
           </Text>
-        </View>
  
         <View className="flex-row items-center my-6 mb-[25px] w-full">
           <View className="flex-1 h-px bg-[#B7B7B7] mx-4" />

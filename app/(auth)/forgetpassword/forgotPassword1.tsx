@@ -153,7 +153,7 @@ const ForgotPassword1 = () => {
           disabled={!isNextButtonEnabled || loading}
         >
           <Text className="text-white text-[16px] font-bold">
-            {loading ? "Sending..." : "Next"}
+            {loading ? "Loading..." : "Next"}
           </Text>
         </TouchableOpacity>
       </View>

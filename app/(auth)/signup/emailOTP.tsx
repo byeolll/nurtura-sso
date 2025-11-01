@@ -41,10 +41,6 @@ const EmailOTP = () => {
 
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
   const handleNextPress = async () => {
-    router.push({
-          pathname: "/(auth)/signup/createPassword",
-          params: { email },
-        });
     const code = otp.join("");
     
     setLoading(true);
