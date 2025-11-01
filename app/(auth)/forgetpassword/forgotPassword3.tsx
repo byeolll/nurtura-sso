@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   Text,
   TextInput,
@@ -78,22 +79,25 @@ const ForgotPassword3 = () => {
 
   // sa next press lang
   const handleNextPress = async () => {
-    const changePassword = async (email: string, newPassword: string) => {
+
+    if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
+            
       try {
         const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/reset-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, newPassword }),
+          body: JSON.stringify({ email, newPassword: password }),
         });
 
         const result = await response.json();
 
         if (!response.ok) {
           console.log("Error:", result.message);
-          return { success: false, message: result.message };
+          return Alert.alert("Error", "An error occured when resetting the password.");
         }
-
-        router.replace('/(tabs)');
+        
+        Alert.alert("Success", "Password has been reset.");
+        router.replace('/(auth)/login');
       } catch (error) {
         console.log("Network error:", error);
         return { success: false, message: "Network error" };
