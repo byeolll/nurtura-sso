@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
@@ -91,10 +91,6 @@ const CreatePassword = () => {
         await SecureStore.setItemAsync("firebaseToken", token);
         markProfileNotCreated();
 
-        router.push({
-          pathname: "/(auth)/signup/createUserInfo",
-          params: { email },
-        });
       } catch (error: any) {
         Alert.alert("Signup Failed", error.message);
         setLoading(false);

@@ -136,8 +136,7 @@ const createUserInfo = () => {
 
   const [loading, setLoading] = useState(false)
 
-  const { email, fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
-  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
+  const { fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -194,7 +193,6 @@ const createUserInfo = () => {
         username,
         firstName,
         lastName,
-        email: normalizedEmail,
         birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, '0')}-${daysList[selectedDayIndex].toString().padStart(2, '0')}`,
       };
 
