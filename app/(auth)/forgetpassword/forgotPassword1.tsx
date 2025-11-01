@@ -80,7 +80,7 @@ const ForgotPassword1 = () => {
         ? "border-red-500"
         : "border-[#919191]";
 
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/forgot-password-otp`, {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

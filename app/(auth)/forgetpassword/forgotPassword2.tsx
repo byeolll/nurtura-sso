@@ -41,7 +41,7 @@ const ForgotPassword2 = () => {
     const code = otp.join("");
 
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/verify-otp`, {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code, purpose: "forgot-password" }),

@@ -1,7 +1,8 @@
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Dimensions,
   Modal,
   ScrollView,
@@ -219,12 +220,12 @@ const createUserInfo = () => {
         return;
       }
 
-      alert("User profile saved!");
+      Alert.alert("Success", "User profile saved!");
       await SecureStore.deleteItemAsync("firebaseToken");
       router.replace('/(tabs)');
     } catch (error) {
       console.log("Error submitting user info:", error);
-      alert("Failed to submit user info");
+      Alert.alert("Error", "Failed to submit user info");
     }
   };
 
