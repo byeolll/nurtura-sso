@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 const CreatePassword = () => {
-  const { signUp } = useAuth();
+  const { signUp, markProfileNotCreated } = useAuth();
 
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -89,6 +89,7 @@ const CreatePassword = () => {
       try {
         const { user, token } = await signUp(normalizedEmail, password);
         await SecureStore.setItemAsync("firebaseToken", token);
+        markProfileNotCreated();
 
         router.push({
           pathname: "/(auth)/signup/createUserInfo",

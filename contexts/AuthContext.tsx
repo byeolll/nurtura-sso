@@ -1,16 +1,15 @@
 import { auth } from '@/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { router } from 'expo-router';
 import {
-  GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   onAuthStateChanged,
   signInWithCredential,
   signInWithEmailAndPassword,
-  signOut,
-  UserCredential,
+  signOut
 } from 'firebase/auth';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { router } from 'expo-router';
 
 export interface UserInfo {
   uid: string;
@@ -25,6 +24,9 @@ export interface UserInfo {
 interface AuthContextType {
   user: UserInfo | null;
   loading: boolean;
+  profileExists: boolean | null;
+  markProfileNotCreated: () => void;
+  markProfileCreated: () => void;
   signUp: (email: string, password: string) => Promise<{ user: any, token: string }>;
   signIn: (email: string, password: string) => Promise<void>;
   googleSignIn: () => Promise<void>;
@@ -37,6 +39,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [profileExists, setProfileExists] = useState<boolean | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,12 +68,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       } else {
         setUser(null);
+        setProfileExists(null);
       }
       setLoading(false);
     });
 
     return unsubscribe;
   }, []);
+
+ const markProfileNotCreated = () => setProfileExists(false);
+
+  const markProfileCreated = () => setProfileExists(true);
 
   const signUp = async (email: string, password: string) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -180,6 +188,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         user,
         loading,
+        profileExists,
+        markProfileNotCreated,
+        markProfileCreated,
         signUp,
         signIn,
         googleSignIn,

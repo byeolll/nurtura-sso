@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -131,6 +132,8 @@ const createUserInfo = () => {
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
+  const { markProfileCreated } = useAuth();
+
   const [loading, setLoading] = useState(false)
 
   const { email, fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
@@ -228,6 +231,7 @@ const createUserInfo = () => {
 
       Alert.alert("Success", "User profile saved!");
       await SecureStore.deleteItemAsync("firebaseToken");
+      markProfileCreated();
       router.replace('/(tabs)');
     } catch (error) {
       console.log("Error submitting user info:", error);
