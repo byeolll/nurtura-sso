@@ -303,6 +303,9 @@ const createUserInfo = () => {
       await SecureStore.deleteItemAsync("signup_password");
       await SecureStore.deleteItemAsync("signup_confirm_password");
       await SecureStore.deleteItemAsync("firebaseToken");
+      await SecureStore.deleteItemAsync("verified_email"); 
+      await SecureStore.deleteItemAsync("email_verified");
+      await SecureStore.deleteItemAsync("signup_email");
     } catch (error) {
       console.log("Error submitting user info:", error);
       Alert.alert("Error", "Failed to submit user info");

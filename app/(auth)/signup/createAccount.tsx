@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   BackHandler,
@@ -14,7 +15,6 @@ import "../../globals.css";
 
 import { USER_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createUserInfo"; // info ni user galing sa createUserInfo passward passward passward
 import { useFocusEffect } from "@react-navigation/native";
-import * as SecureStore from "expo-secure-store";
 
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -40,6 +40,8 @@ const CreateAccount = () => {
               await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY); // user info i2
               await SecureStore.deleteItemAsync("signup_password"); // passward
               await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
+              await SecureStore.deleteItemAsync("verified_email"); // Clear verification
+              await SecureStore.deleteItemAsync("signup_email"); // Clear saved emai
               router.back();
             },
           },
@@ -55,6 +57,18 @@ const CreateAccount = () => {
       return () => backHandler.remove();
     }, [])
   );
+
+  // Load saved email when component mounts
+  useEffect(() => {
+    const loadSavedEmail = async () => {
+      const savedEmail = await SecureStore.getItemAsync("signup_email");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        validateEmail(savedEmail);
+      }
+    };
+    loadSavedEmail();
+  }, []);
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -110,19 +124,38 @@ const CreateAccount = () => {
   };
 
   const handleNextPress = async () => {
-    router.push({
-      pathname: "/(auth)/signup/emailOTP",
-      params: { email },
-    });
-
     if (!isNextButtonEnabled) return;
 
     setLoading(true);
 
     try {
+      const savedEmail = await SecureStore.getItemAsync("signup_email");
+      const verifiedEmail = await SecureStore.getItemAsync("verified_email");
+
+      if (savedEmail && savedEmail !== email) {
+        console.log("Email changed from", savedEmail, "to", email);
+        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+        await SecureStore.deleteItemAsync("signup_password");
+        await SecureStore.deleteItemAsync("signup_confirm_password");
+        await SecureStore.deleteItemAsync("verified_email");
+      }
+
+      await SecureStore.setItemAsync("signup_email", email);
+
+      if (verifiedEmail === email) {
+        console.log("Email already verified, skipping OTP");
+        router.push({
+          pathname: "/(auth)/signup/createPassword",
+          params: { email },
+        });
+        setLoading(false);
+        return;
+      }
+
       const emailTaken = await isEmailAlreadyRegistered(email);
 
       if (emailTaken) {
+        setLoading(false);
         return Alert.alert("Error", "Email is already registered!");
       }
 
@@ -133,10 +166,6 @@ const CreateAccount = () => {
         hour: "2-digit",
         minute: "2-digit",
       });
-
-      const EMAIL_BORDER_COLOR = emailError
-        ? "border-red-500"
-        : "border-[#919191]";
 
       const response = await fetch(
         `http://${LOCAL_IP}:${PORT}/email-service/send-otp`,

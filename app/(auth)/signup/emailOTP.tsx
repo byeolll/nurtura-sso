@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -27,15 +28,15 @@ const EmailOTP = () => {
       const newOtp = [...otp];
       newOtp[index] = text;
       setOtp(newOtp);
- 
+
       if (isOtpInvalid) {
         setIsOtpInvalid(false);
       }
- 
+
       if (newOtp.every((v) => v === "")) {
         setIsOtpInvalid(false);
       }
- 
+
       if (text && index < 4) {
         inputs.current[index + 1]?.focus();
       }
@@ -49,13 +50,6 @@ const EmailOTP = () => {
 
   // pag clinick next, andito yung nextpage and pangkuha ng tinype ni user na OTP
   const handleNextPress = async () => {
-
-    router.push({
-          pathname: "/(auth)/signup/createPassword",
-          params: { email },
-        });
-
-        
     const code = otp.join("");
 
     setLoading(true);
@@ -74,7 +68,8 @@ const EmailOTP = () => {
 
       if (response.ok) {
         console.log("OTP Verified");
-        router.push({
+        await SecureStore.setItemAsync("verified_email", email as string);
+        router.replace({
           pathname: "/(auth)/signup/createPassword",
           params: { email },
         });

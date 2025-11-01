@@ -8,12 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
 
-
 const CreatePassword = () => {
-
   // para sa show/hide password
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -31,25 +29,30 @@ const CreatePassword = () => {
   const [loading, setLoading] = useState(false); // for loading
 
   // Load saved passwords (if any)
-useEffect(() => {
-  const loadPasswords = async () => {
-    const savedPassword = await SecureStore.getItemAsync("signup_password");
-    const savedConfirm = await SecureStore.getItemAsync("signup_confirm_password");
+  useEffect(() => {
+    const loadPasswords = async () => {
+      const savedPassword = await SecureStore.getItemAsync("signup_password");
+      const savedConfirm = await SecureStore.getItemAsync(
+        "signup_confirm_password"
+      );
 
-    if (savedPassword) setPassword(savedPassword);
-    if (savedConfirm) setConfirmPassword(savedConfirm);
-  };
-  loadPasswords();
-}, []);
+      if (savedPassword) setPassword(savedPassword);
+      if (savedConfirm) setConfirmPassword(savedConfirm);
+    };
+    loadPasswords();
+  }, []);
 
-// Save passwords when they change
-useEffect(() => {
-  const savePasswords = async () => {
-    await SecureStore.setItemAsync("signup_password", password);
-    await SecureStore.setItemAsync("signup_confirm_password", confirmPassword);
-  };
-  savePasswords();
-}, [password, confirmPassword]);
+  // Save passwords when they change
+  useEffect(() => {
+    const savePasswords = async () => {
+      await SecureStore.setItemAsync("signup_password", password);
+      await SecureStore.setItemAsync(
+        "signup_confirm_password",
+        confirmPassword
+      );
+    };
+    savePasswords();
+  }, [password, confirmPassword]);
 
   // pang-enable lang sa Next button
   const isNextButtonEnabled =
