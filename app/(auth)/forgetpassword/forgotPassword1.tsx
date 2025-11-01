@@ -52,7 +52,7 @@ const ForgotPassword1 = () => {
       return false; // Email available
     } catch (error) {
       console.error("Error checking email:", error);
-      return true; // Fail-safe: treat as taken
+      throw error; // Fail-safe: treat as taken
     }
   };
 

@@ -64,7 +64,7 @@ const ForgotPassword2 = () => {
       }
     } catch (error) {
       console.log("Error verifying OTP:", error);
-      alert("Network error. Try again.");
+      Alert.alert("Error", "Network error. Try again.");
       setLoading(false);
     }
   };

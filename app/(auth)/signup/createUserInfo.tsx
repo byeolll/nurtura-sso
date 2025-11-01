@@ -183,7 +183,7 @@ const createUserInfo = () => {
     try {
       const token = await SecureStore.getItemAsync("firebaseToken");
       if (!token) {
-        alert("User not authenticated");
+        Alert.alert("User not authenticated");
         return;
       }
 
@@ -209,19 +209,19 @@ const createUserInfo = () => {
       const data = await response.json();
 
       if (response.status === 401) {
-        alert(data.message); // Unauthorized Token/Access
+        Alert.alert("Error", data.message); // Unauthorized Token/Access
         setLoading(false);
         return;
       }
 
       if (response.status === 409) {
-        alert(data.message); // Username taken
+        Alert.alert("Error", data.message); // Username taken
         setLoading(false);
         return;
       }
 
       if (!response.ok) {
-        alert("Registration failed");
+        Alert.alert("Error", "Registration failed");
         setLoading(false);
         return;
       }
