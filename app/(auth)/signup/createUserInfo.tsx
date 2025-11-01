@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import {
   Dimensions,
   Modal,
@@ -130,11 +130,18 @@ const createUserInfo = () => {
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
-  const { email } = useLocalSearchParams();
+  const { email, fromGoogle, firstName: googleFirstName, lastName: googleLastName } = useLocalSearchParams();
   const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
+
+  useEffect(() => {
+    if (fromGoogle === "true") {
+      setFirstName(Array.isArray(googleFirstName) ? googleFirstName[0] : googleFirstName || "");
+      setLastName(Array.isArray(googleLastName) ? googleLastName[0] : googleLastName || "");
+    }
+  }, [fromGoogle, googleFirstName, googleLastName]);
 
   // Memoize static data
   const monthsList = useMemo(
@@ -267,6 +274,13 @@ const createUserInfo = () => {
           <Text className="text-black font-bold text-[24px] mb-4">
             Let us know you!
           </Text>
+
+          {fromGoogle === "true" && (
+            <Text className="text-center text-red-500 mb-4">
+              Welcome! We’ve pre-filled your info from Google — please enter your
+              birthday to complete your registration.
+            </Text>
+          )}
  
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[5px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
@@ -303,7 +317,7 @@ const createUserInfo = () => {
               onChangeText={handleLastNameChange}
             />
           </View>
- 
+                    
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Birthday
