@@ -24,19 +24,27 @@ export default function LoginScreen() {
 
   const cleanInput = (text: string) => {
     return text
-      .replace(/\s/g, "")  
+      .replace(/\s/g, "")
       .replace(
         /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+?/g,
         ""
-      );  
+      );
   };
 
   const handleEmailChange = (value: string) => {
-    setEmail(cleanInput(value));
+    const cleaned = cleanInput(value);
+    setEmail(cleaned);
+    if (cleaned.trim() === "" || password.trim() === "") {
+      setIsLoginInvalid(false);
+    }
   };
 
   const handlePasswordChange = (value: string) => {
-    setPassword(cleanInput(value));
+    const cleaned = cleanInput(value);
+    setPassword(cleaned);
+    if (cleaned.trim() === "" || email.trim() === "") {
+      setIsLoginInvalid(false);
+    }
   };
 
   const handleLogin = async () => {
@@ -134,15 +142,9 @@ export default function LoginScreen() {
               keyboardType="default"
               autoCapitalize="none"
               value={password}
-              onChangeText={handlePasswordChange}   
+              onChangeText={handlePasswordChange}
             />
           </View>
-
-          {isLoginInvalid && (
-            <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
-              Invalid login. Please try again.
-            </Text>
-          )}
 
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -160,6 +162,12 @@ export default function LoginScreen() {
             />
           </TouchableOpacity>
         </View>
+
+        {isLoginInvalid && (
+          <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+            Invalid login. Please try again.
+          </Text>
+        )}
         <Text className="ml-2">
           Forgot password?{" "}
           <Text
