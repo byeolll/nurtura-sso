@@ -335,12 +335,12 @@ const createUserInfo = () => {
   };
 
   const handleFirstNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
     setFirstName(cleanText);
   };
 
   const handleLastNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
     setLastName(cleanText);
   };
 
