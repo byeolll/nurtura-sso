@@ -94,8 +94,7 @@ const ForgotPassword3 = () => {
 
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
       try {
-        const response = await fetch(
-          `http://${LOCAL_IP}:${PORT}/users/reset-password`,
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/reset-password`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -105,22 +104,19 @@ const ForgotPassword3 = () => {
 
         const result = await response.json();
 
-        if (!response.ok) {
-          console.log("Error:", result.message);
-          setLoading(false);
-          return Alert.alert(
-            "Error",
-            "An error occured when resetting the password."
-          );
+        if (response.ok){
+          console.log("Password changed successfully:", result);
+          Alert.alert("Success", "Password has been reset.");
+          router.replace("/(auth)/login");
+        } else{
+          console.error("Error:", result.message);
+          return Alert.alert("Error", "An error occured when resetting the password.");
         }
-
-        Alert.alert("Success", "Password has been reset.");
-        router.replace("/(auth)/login");
-        setLoading(false);
       } catch (error) {
-        console.log("Network error:", error);
-        setLoading(false);
-        return { success: false, message: "Network error" };
+          console.error("Error resetting password:", error);
+          Alert.alert("Error", "Unable to reset password. Please try again.");
+      } finally{
+          setLoading(false);
       }
     }
   };
