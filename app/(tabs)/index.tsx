@@ -101,7 +101,7 @@ export default function NurturaWelcome() {
         <View style={styles.infoBlock}>
           <Text style={styles.boldText}>Is this really yours?</Text>
           <Text style={styles.subText}>
-            Is <Text style={styles.placeholder}>{userInfo?.email || "—"}</Text> and{" "}
+            Is <Text style={styles.placeholder}>{userInfo?.email || "—"}</Text> your email?
           </Text>
         </View>
       </View>
@@ -133,10 +133,11 @@ const styles = StyleSheet.create({
   },
 
   username: {
-    fontSize: 40,
+    fontSize: 30,
     color: "#000",
     fontWeight: "800",
     marginTop: 2,
+    maxWidth: 220,
   },
 
   centerSection: {
