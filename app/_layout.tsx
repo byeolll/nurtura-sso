@@ -1,7 +1,6 @@
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import './globals.css';
 
 function RootLayoutNav() {
@@ -21,13 +20,13 @@ function RootLayoutNav() {
 }
   }, [user, loading, segments ]);
 
-  if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#3b82f6" />
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 items-center justify-center bg-white">
+  //       <ActivityIndicator size="large" color="#3b82f6" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

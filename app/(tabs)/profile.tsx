@@ -1,8 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import { User } from '../../types/interface';
 
 const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
 const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -13,44 +12,37 @@ export default function ProfileScreen() {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const { email } = useLocalSearchParams();
+  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
+
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      if (!user?.email) return;
-      try {
-        console.log('LOCAL_IP', LOCAL_IP, 'PORT', PORT);
+  const fetchUserInfo = async () => {
+    console.log(normalizedEmail);
+    
+    if (!normalizedEmail) return;
 
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email }),
-        });
+    try {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
 
-        const data = await response.json();
+      const result = await response.json();
 
-        if (response.ok) {
-          console.log(data.message);
-          setUserInfo(data.userInfo);
-        } else {
-          console.log(data.message);
-          console.log('No DB user info found, using Firebase/Google data');
-          setUserInfo({
-            first_name: user.firstName,
-            last_name: user.lastName,
-            email: user.email,
-            birthday: user.birthday || null,
-            photo: user.photo || null,
-          });
-        }
-      } catch (err: any) {
-        console.error('Fetch user info failed:', err);
-        Alert.alert('Error', 'Unable to fetch profile data.');
-      } finally {
-        setLoading(false);
+      if (response.ok) {
+        console.log(result.message);
+        setUserInfo(result.userInfo);
       }
-    };
 
-    fetchUserInfo();
-  }, [user]);
+    } catch (err: any) {
+      console.error("Fetch user info failed:", err);
+      Alert.alert("Error", "Unable to fetch profile data.");
+    }
+  };
+
+  fetchUserInfo();
+}, []);
 
   const handleLogout = async () => {
     Alert.alert(
@@ -96,27 +88,23 @@ export default function ProfileScreen() {
       {userInfo ? (
           <>
             <Text className="text-base text-gray-700">
-              <Text className="font-semibold">Username: </Text>{userInfo.username || '—'}
+              <Text className="font-semibold">First Name: </Text>{userInfo.first_name || '—'}
             </Text>
             <Text className="text-base text-gray-700">
-              <Text className="font-semibold">First Name: </Text>{userInfo.first_name || '—'}
+              <Text className="font-semibold">Midlle Name: </Text>{userInfo.middle_name || '—'}
             </Text>
             <Text className="text-base text-gray-700">
               <Text className="font-semibold">Last Name: </Text>{userInfo.last_name || '—'}
             </Text>
             <Text className="text-base text-gray-700">
-              <Text className="font-semibold">Birthday: </Text>{userInfo.formattedBirthday || '—'}
+              <Text className="font-semibold">Suffix: </Text>{userInfo.suffix || '—'}
             </Text>
-
-            {userInfo.birthday && (
-              <Text className="text-base text-gray-700">
-                <Text className="font-semibold">Age: </Text>
-                {Math.floor(
-                  (new Date().getTime() - new Date(userInfo.birthday).getTime()) /
-                    (1000 * 60 * 60 * 24 * 365)
-                )}
-              </Text>
-            )}
+            <Text className="text-base text-gray-700">
+              <Text className="font-semibold">Birthdate: </Text>{userInfo.formattedBirthdate || '—'}
+            </Text>
+            <Text className="text-base text-gray-700">
+              <Text className="font-semibold">Address: </Text>{userInfo.address || '—'}
+            </Text>
           </>
         ) : (
           <Text className="text-gray-500">No additional info found.</Text>

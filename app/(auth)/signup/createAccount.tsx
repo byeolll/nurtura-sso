@@ -16,6 +16,8 @@ import "../../globals.css";
 import { USER_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createUserInfo"; // info ni user galing sa createUserInfo passward passward passward
 import { useFocusEffect } from "@react-navigation/native";
 
+export const SSO_INFO_STORAGE_KEY = "sso_temp_user_info";
+
 const CreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -34,6 +36,7 @@ const CreateAccount = () => {
     const clearStorageOnFirstEntry = async () => {
       if (isFirstMount) {
         await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+        await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
         await SecureStore.deleteItemAsync("signup_email");
         await SecureStore.deleteItemAsync("verified_email"); 
         await SecureStore.deleteItemAsync("signup_password");
@@ -70,6 +73,7 @@ const CreateAccount = () => {
             style: "destructive",
             onPress: async () => {
               await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY); // user info i2
+              await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
               await SecureStore.deleteItemAsync("signup_password"); // passward
               await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
               await SecureStore.deleteItemAsync("verified_email"); // Clear verification
@@ -228,25 +232,39 @@ const CreateAccount = () => {
 
     setLoading(true);
     try {
-      await googleSignUp((newUserData) => {
-        console.log("New user detected:", newUserData);
-        router.push({
-          pathname: "/(auth)/signup/createUserInfo",
-          params: {
-            email: newUserData.email ?? "",
-            firstName: newUserData.firstName ?? "",
-            lastName: newUserData.lastName ?? "",
-          },
-        });
-        setLoading(false);
+
+      await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+      await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
+
+      const { userData } = await googleSignUp();
+
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/SSO-isNewUser`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email }),
       });
 
-      console.log("Google Sign-Up successful");
+      const isNewUser = (response.status === 200);
+
+      if (isNewUser) {
+        const dataToSave = {
+          email: userData.email ?? "",
+          firstName: userData.firstName ?? "",
+          lastName: userData.lastName ?? "",
+          token: userData.token ?? "",
+        }
+        
+        await SecureStore.setItemAsync(SSO_INFO_STORAGE_KEY, JSON.stringify(dataToSave));
+        
+        console.log("Google Sign-Up successful");
+        router.replace("/(auth)/signup/createUserInfo?fromGoogle=true");
+      }
+
     } catch (error: any) {
-      console.error("Google Sign-Up Error:", error);
-      Alert.alert("Google Sign-Up Failed", error.message);
+        console.error("Google Sign-Up Error:", error);
+        Alert.alert("Google Sign-Up Failed", error.message);
     } finally {
-      setLoading(false);
+       setLoading(false);
     }
   };
 

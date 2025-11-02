@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 
+import { SSO_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createAccount";
 export const USER_INFO_STORAGE_KEY = "temp_user_info";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -142,31 +143,38 @@ const CreateUserInfo = () => {
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
+  const [firebaseToken, setFirebaseToken] = useState("");
+
   const { signUp } = useAuth();
 
   const [loading, setLoading] = useState(false);
 
   const {
     fromGoogle,
-    firstName: googleFirstName,
-    lastName: googleLastName,
   } = useLocalSearchParams();
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
   useEffect(() => {
-    if (fromGoogle === "true") {
-      setFirstName(
-        Array.isArray(googleFirstName)
-          ? googleFirstName[0]
-          : googleFirstName || ""
-      );
-      setLastName(
-        Array.isArray(googleLastName) ? googleLastName[0] : googleLastName || ""
-      );
-    }
-  }, [fromGoogle, googleFirstName, googleLastName]);
+    (async () => {
+      try {
+        if (fromGoogle === "true") {
+          const savedData = await SecureStore.getItemAsync(SSO_INFO_STORAGE_KEY);
+
+          if (savedData) {
+            const parsed = JSON.parse(savedData);
+            setFirstName(parsed.firstName || "");
+            setLastName(parsed.lastName || "");
+            setFirebaseToken(parsed.token || "");
+          }
+        }
+
+      } catch (err) {
+        console.error("Error loading saved user info:", err);
+      }
+    })();
+  }, [fromGoogle]);
 
   useEffect(() => {
     (async () => {
@@ -281,32 +289,34 @@ const CreateUserInfo = () => {
         setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
         setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
       }
-
-      // pakipalitan nito once na okay na yung SecureStore
-      //const verifiedEmail = await SecureStore.getItemAsync("verified_email");
-      const verifiedEmail = await SecureStore.getItemAsync("signup_email");
+      
+      const verifiedEmail = await SecureStore.getItemAsync("verified_email");
       const verifiedPassword = await SecureStore.getItemAsync("signup_confirm_password");
 
-      if (!verifiedEmail || !verifiedPassword) {
-        Alert.alert("Error", "Missing credentials");
-        return;
+      if (fromGoogle !== "true") {
+
+        if (!verifiedEmail || !verifiedPassword) {
+          Alert.alert("Error", "Missing credentials");
+          return;
+        }
+  
+        const { token } = await signUp(verifiedEmail, verifiedPassword);
+  
+        if (!token) {
+          Alert.alert("User not authenticated");
+          return;
+        }
+
+        setFirebaseToken(token);
       }
 
-      console.log(verifiedEmail, verifiedPassword)
-
-      const { token } = await signUp(verifiedEmail, verifiedPassword);
-
-      if (!token) {
-        Alert.alert("User not authenticated");
-        return;
-      }
 
       const userDetails = {
         firstName,
         middleName,
         lastName,
         suffix,
-        birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
+        birthdate: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
         block,
         street,
         barangay,
@@ -319,7 +329,7 @@ const CreateUserInfo = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${firebaseToken}`,
           },
           body: JSON.stringify(userDetails),
         }
@@ -337,12 +347,19 @@ const CreateUserInfo = () => {
         console.log("User created successfully:", result);
 
         await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+        await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
         await SecureStore.deleteItemAsync("signup_email");
         await SecureStore.deleteItemAsync("verified_email"); 
         await SecureStore.deleteItemAsync("signup_password");
         await SecureStore.deleteItemAsync("signup_confirm_password");
         await SecureStore.deleteItemAsync("firebaseToken");
         Alert.alert("Success", "User profile saved!");
+
+        router.replace({
+          pathname: "/(tabs)/profile",
+          params: { email: result.email }
+        });
+
       } else {
         console.error("Error:", result.message);
         return Alert.alert("Error", "Registration failed");
@@ -373,42 +390,42 @@ const CreateUserInfo = () => {
   };
 
   const handleFirstNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9. ]/g, "");
     setFirstName(cleanText);
   };
 
   const handleMiddleNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9. ]/g, "");
     setMiddleName(cleanText);
   };
 
   const handleLastNameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9 ]/g, "");
     setLastName(cleanText);
   };
 
   const handleSuffixChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z. ]/g, "");
     setSuffix(cleanText);
   }
 
   const handleBlockChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9. ]/g, "");
     setBlock(cleanText);
   }
 
   const handleStreetChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9. ]/g, "");
     setStreet(cleanText);
   }
 
   const handleBarangayChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9. ]/g, "");
     setBarangay(cleanText);
   }
 
   const handleCityChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9. ]/g, "");
     setCity(cleanText);
   }
 
@@ -430,15 +447,15 @@ const CreateUserInfo = () => {
           </Text>
 
           {fromGoogle === "true" && (
-            <Text className="text-center text-red-500 mb-4">
+            <Text className="text-center text-primary mb-4">
               Welcome! We’ve pre-filled your info from Google — please enter
-              your birthday to complete your registration.
+              the missing fields to complete your registration.
             </Text>
           )}
 
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              First Name *
+              First Name
             </Text>
             <TextInput
               className="text-black text-[16px]"
@@ -461,7 +478,7 @@ const CreateUserInfo = () => {
           <View className="w-full gap-5 flex-row justify-between">
             <View className='w-[60%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
               <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Last Name *
+              Last Name
               </Text>
               <TextInput
                 className="text-black text-[16px]"
@@ -484,22 +501,22 @@ const CreateUserInfo = () => {
           <View className="w-full gap-5 flex-row justify-between">
             <View className='w-[50%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
               <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Block/House No. *
+              Block/House No.
               </Text>
               <TextInput
                 className="text-black text-[16px]"
                 value={block}
-                onChangeText={setBlock}
+                onChangeText={handleBlockChange}
               />
             </View>
             <View className='w-[45%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
               <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Street *
+              Street
               </Text>
               <TextInput
                 className="text-black text-[16px]"
                 value={street}
-                onChangeText={setStreet}
+                onChangeText={handleStreetChange}
               />
             </View>
           </View>
@@ -507,29 +524,29 @@ const CreateUserInfo = () => {
           <View className="w-full gap-5 flex-row justify-between">
             <View className='w-[50%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
               <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Barangay *
+              Barangay
               </Text>
               <TextInput
                 className="text-black text-[16px]"
                 value={barangay}
-                onChangeText={setBarangay}
+                onChangeText={handleBarangayChange}
               />
             </View>
             <View className='w-[45%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
               <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              City *
+              City
               </Text>
               <TextInput
                 className="text-black text-[16px]"
                 value={city}
-                onChangeText={setCity}
+                onChangeText={handleCityChange}
               />
             </View>
           </View>  
 
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Birthday *
+              Birthdate
             </Text>
             <TouchableOpacity onPress={openDatePicker} className="py-3">
               <Text className="text-[16px] text-black">
