@@ -103,14 +103,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       const firebaseUser = userCredential.user;
-      const displayName = firebaseUser.displayName || '';
-      const [firstName, lastName] = displayName.split(' ');
+      const googleUser = result.data?.user;
 
       setUser({
         uid: firebaseUser.uid,
         email: firebaseUser.email,
-        firstName: firstName || null,
-        lastName: lastName || null,
+        firstName: googleUser?.givenName || null,
+        lastName: googleUser?.familyName || null,
         username: firebaseUser.email?.split('@')[0] || null,
         photo: firebaseUser.photoURL || null,
       });
@@ -132,15 +131,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const userCredential = await signInWithCredential(auth, credential);
       const additionalInfo = (userCredential as any).additionalUserInfo;
       const firebaseUser = userCredential.user;
-
-      const displayName = firebaseUser.displayName || '';
-      const [firstName, lastName] = displayName.split(' ');
+      const googleUser = result.data?.user;
 
       const userData: UserInfo = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
-        firstName: firstName || null,
-        lastName: lastName || null,
+        firstName: googleUser?.givenName || null,
+        lastName: googleUser?.familyName || null,
         username: firebaseUser.email?.split('@')[0] || null,
         photo: firebaseUser.photoURL || null,
       };
