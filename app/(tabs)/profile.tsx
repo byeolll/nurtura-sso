@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { User } from '../../types/interface';
 
 const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
 const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -33,7 +34,6 @@ export default function ProfileScreen() {
           console.log(data.message);
           console.log('No DB user info found, using Firebase/Google data');
           setUserInfo({
-            username: user.username,
             first_name: user.firstName,
             last_name: user.lastName,
             email: user.email,

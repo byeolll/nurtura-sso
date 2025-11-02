@@ -123,10 +123,18 @@ const WheelScrollPicker = React.memo(
   }
 );
 
-const createUserInfo = () => {
-  const [username, setUsername] = useState("");
+WheelScrollPicker.displayName = "WheelScrollPicker";
+
+const CreateUserInfo = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [suffix, setSuffix] = useState("");
+
+  const [block, setBlock] = useState("");
+  const [street, setStreet] = useState("");
+  const [barangay, setBarangay] = useState("");
+  const [city, setCity] = useState("");
 
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -173,7 +181,6 @@ const createUserInfo = () => {
         const savedData = await SecureStore.getItemAsync(USER_INFO_STORAGE_KEY);
         if (savedData) {
           const parsed = JSON.parse(savedData);
-          setUsername(parsed.username || "");
           setFirstName(parsed.firstName || "");
           setLastName(parsed.lastName || "");
           setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
@@ -190,7 +197,6 @@ const createUserInfo = () => {
     const saveUserInfo = async () => {
       try {
         const dataToSave = {
-          username,
           firstName,
           lastName,
           selectedMonthIndex,
@@ -207,7 +213,6 @@ const createUserInfo = () => {
     };
     saveUserInfo();
   }, [
-    username,
     firstName,
     lastName,
     selectedMonthIndex,
@@ -258,10 +263,14 @@ const createUserInfo = () => {
       }
 
       const userDetails = {
-        username,
         firstName,
+        middleName,
         lastName,
         birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
+        block,
+        street,
+        barangay,
+        city
       };
 
       console.log("Sending User Details:", userDetails);
@@ -313,14 +322,14 @@ const createUserInfo = () => {
     }
   };
 
-  const checkIfUsernameHasValue = username.trim().length > 0;
   const checkIfFirstNameHasValue = firstName.trim().length > 0;
   const checkIfLastNameHasValue = lastName.trim().length > 0;
+  const checkIfAddressHasValue = block.trim().length > 0 && street.trim().length > 0 && barangay.trim().length > 0 && city.trim().length > 0;
 
   const areAllFieldsFilled =
-    checkIfUsernameHasValue &&
     checkIfFirstNameHasValue &&
-    checkIfLastNameHasValue;
+    checkIfLastNameHasValue &&
+    checkIfAddressHasValue;
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -329,20 +338,51 @@ const createUserInfo = () => {
     );
   };
 
-  const handleUsernameChange = (text: string) => {
-    const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9._-]/g, "");
-    setUsername(cleanText.slice(0, 30));
-  };
+  // const handleUsernameChange = (text: string) => {
+  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9._-]/g, "");
+  //   setUsername(cleanText.slice(0, 30));
+  // };
 
   const handleFirstNameChange = (text: string) => {
     const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
     setFirstName(cleanText);
   };
 
+  const handleMiddleNameChange = (text: string) => {
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    setMiddleName(cleanText);
+  };
+
   const handleLastNameChange = (text: string) => {
     const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
     setLastName(cleanText);
   };
+
+  const handleSuffixChange = (text: string) => {
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    setSuffix(cleanText);
+  }
+
+  // const handleBlockChange = (text: string) => {
+  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+  //   setBlock(cleanText);
+  // }
+
+  // const handleStreetChange = (text: string) => {
+  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+  //   setStreet(cleanText);
+  // }
+
+  // const handleBarangayChange = (text: string) => {
+  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+  //   setBarangay(cleanText);
+  // }
+
+  // const handleCityChange = (text: string) => {
+  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+  //   setCity(cleanText);
+  // }
+
 
   const openDatePicker = () => {
     setIsDatePickerVisible(true);
@@ -367,7 +407,7 @@ const createUserInfo = () => {
             </Text>
           )}
 
-          <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[5px] border-[#919191]">
+          {/* <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[5px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Username
             </Text>
@@ -379,11 +419,11 @@ const createUserInfo = () => {
           </View>
           <Text className="text-gray-500 text-[12px] pb-5 ml-2">
             {username.length}/30
-          </Text>
+          </Text> */}
 
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              First Name
+              First Name *
             </Text>
             <TextInput
               className="text-black text-[16px]"
@@ -394,18 +434,87 @@ const createUserInfo = () => {
 
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Last Name
+              Middle Name (optional)
             </Text>
             <TextInput
               className="text-black text-[16px]"
-              value={lastName}
-              onChangeText={handleLastNameChange}
+              value={middleName}
+              onChangeText={handleMiddleNameChange}
             />
           </View>
 
+          <View className="w-full gap-5 flex-row justify-between">
+            <View className='w-[60%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
+              <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+              Last Name *
+              </Text>
+              <TextInput
+                className="text-black text-[16px]"
+                value={lastName}
+                onChangeText={handleLastNameChange}
+              />
+            </View>
+            <View className='w-[35%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
+              <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+              Suffix (optional)
+              </Text>
+              <TextInput
+                className="text-black text-[16px]"
+                value={suffix}
+                onChangeText={handleSuffixChange}
+              />
+            </View>
+          </View>
+
+          <View className="w-full gap-5 flex-row justify-between">
+            <View className='w-[50%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
+              <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+              Block/House No. *
+              </Text>
+              <TextInput
+                className="text-black text-[16px]"
+                value={block}
+                onChangeText={setBlock}
+              />
+            </View>
+            <View className='w-[45%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
+              <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+              Street *
+              </Text>
+              <TextInput
+                className="text-black text-[16px]"
+                value={street}
+                onChangeText={setStreet}
+              />
+            </View>
+          </View>
+
+          <View className="w-full gap-5 flex-row justify-between">
+            <View className='w-[50%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
+              <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+              Barangay *
+              </Text>
+              <TextInput
+                className="text-black text-[16px]"
+                value={barangay}
+                onChangeText={setBarangay}
+              />
+            </View>
+            <View className='w-[45%] border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191] pt-2 px-3'>
+              <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+              City *
+              </Text>
+              <TextInput
+                className="text-black text-[16px]"
+                value={city}
+                onChangeText={setCity}
+              />
+            </View>
+          </View>  
+
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Birthday
+              Birthday *
             </Text>
             <TouchableOpacity onPress={openDatePicker} className="py-3">
               <Text className="text-[16px] text-black">
@@ -487,4 +596,4 @@ const createUserInfo = () => {
   );
 };
 
-export default createUserInfo;
+export default CreateUserInfo;
