@@ -70,6 +70,7 @@ const ForgotPassword1 = () => {
       const emailTaken = await isEmailAlreadyRegistered(email);
 
       if (!emailTaken) {
+        setLoading(false);
         return Alert.alert("Error", "Email is not registered!");
       }
 
@@ -107,13 +108,16 @@ const ForgotPassword1 = () => {
           pathname: "/(auth)/forgetpassword/forgotPassword2",
           params: { email },
         });
+        setLoading(false);
       } else {
         Alert.alert("Error", result.message || "Failed to send OTP.");
         console.error(result.error);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
       Alert.alert("Error", "Unable to send OTP. Please try again later.");
+      setLoading(false);
     } finally {
       setLoading(false);
     }
