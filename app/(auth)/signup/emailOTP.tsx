@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -18,9 +18,18 @@ const EmailOTP = () => {
 
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
-  const { email } = useLocalSearchParams();
+  const [savedEmail, setSavedEmail] = useState<string | null>(null);
 
   const [isOtpInvalid, setIsOtpInvalid] = useState(false); // for styling if otp is invalid hihiz
+
+  useEffect(() => {
+    const loadEmail = async () => {
+      const email = await SecureStore.getItemAsync("signup_email");
+      setSavedEmail(email);
+    };
+
+    loadEmail();
+  }, []);
 
   // input function, para auto next once mag type ng number
   const handleChange = (text: string, index: number) => {
@@ -60,7 +69,7 @@ const EmailOTP = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, code, purpose: "registration" }),
+          body: JSON.stringify({ email: savedEmail, code, purpose: "registration" }),
         }
       );
 
@@ -68,21 +77,18 @@ const EmailOTP = () => {
 
       if (response.ok) {
         console.log("OTP Verified");
-        await SecureStore.setItemAsync("verified_email", email as string);
-        router.replace({
-          pathname: "/(auth)/signup/createPassword",
-          params: { email },
-        });
-        setLoading(false);
+        await SecureStore.setItemAsync("verified_email", savedEmail as string);
+        router.replace("/(auth)/signup/createPassword");
       } else {
+        console.error("Error verifying OTP:", result.message);
         setIsOtpInvalid(true);
-        console.log("Invalid OTP");
-        setLoading(false);
       }
+
     } catch (error) {
-      console.log("Error verifying OTP:", error);
-      Alert.alert("Error", "Network error. Try again.");
-      setLoading(false);
+        console.error("Error verifying OTP:", error);
+        Alert.alert("Error", "Unable to verify OTP. Please try again.");
+    } finally{
+        setLoading(false);
     }
   };
 
@@ -145,7 +151,7 @@ const EmailOTP = () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email,
+              email: savedEmail,
               code: otp,
               time: formattedTime,
             }),
@@ -177,7 +183,7 @@ const EmailOTP = () => {
 
         <Text className="pl-2 mb-[20px] text-[13px] text-gray-700 leading-normal">
           Enter the 5 digit code that was sent to your email address: {""}
-          <Text className="text-primary font-bold">{email}</Text>
+          <Text className="text-primary font-bold">{savedEmail}</Text>
         </Text>
 
         <View className="flex-row justify-between w-[100%] self-center mb-[10px]">

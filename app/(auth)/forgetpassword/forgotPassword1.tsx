@@ -41,8 +41,7 @@ const ForgotPassword1 = () => {
 
   const isEmailAlreadyRegistered = async (email: string) => {
     try {
-      const response = await fetch(
-        `http://${LOCAL_IP}:${PORT}/users/check-email`,
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/check-email`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -54,10 +53,9 @@ const ForgotPassword1 = () => {
         return true; // Email taken
       }
 
-      return false; // Email available
+        return false; // Email available
     } catch (error) {
-      console.error("Error checking email:", error);
-      throw error;
+        throw error;
     }
   };
 
@@ -66,14 +64,20 @@ const ForgotPassword1 = () => {
 
     setLoading(true);
 
-    try {
+    try{
       const emailTaken = await isEmailAlreadyRegistered(email);
 
       if (!emailTaken) {
         setLoading(false);
         return Alert.alert("Error", "Email is not registered!");
       }
-
+    } catch (error){
+        console.error("Error checking email:", error);
+        setLoading(false);
+        return Alert.alert("Error", "An error occured when verifying the email.");
+    }
+    
+    try {
       const otp = Math.floor(10000 + Math.random() * 90000);
       const currentTime = new Date();
       const expireTime = new Date(currentTime.getTime() + 15 * 60000);
@@ -86,8 +90,7 @@ const ForgotPassword1 = () => {
         ? "border-red-500"
         : "border-[#919191]";
 
-      const response = await fetch(
-        `http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`,
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -102,24 +105,22 @@ const ForgotPassword1 = () => {
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert("Success", "OTP has been sent to your email.");
         console.log("Email sent successfully:", result);
+        Alert.alert("Success", "OTP has been sent to your email.");
+
         router.push({
           pathname: "/(auth)/forgetpassword/forgotPassword2",
           params: { email },
         });
-        setLoading(false);
       } else {
-        Alert.alert("Error", result.message || "Failed to send OTP.");
-        console.error(result.error);
-        setLoading(false);
+        console.error("Error sending OTP:", result.message);
+        Alert.alert("Error", "Failed to send OTP.");
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
-      Alert.alert("Error", "Unable to send OTP. Please try again later.");
-      setLoading(false);
+        console.error("Error sending OTP:", error);
+        Alert.alert("Error", "Unable to send OTP. Please try again later.");
     } finally {
-      setLoading(false);
+       setLoading(false);
     }
   };
 

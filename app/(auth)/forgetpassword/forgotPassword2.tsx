@@ -44,7 +44,8 @@ const ForgotPassword2 = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/verify-otp`, {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/verify-otp`, 
+        {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code, purpose: "forgot-password" }),
@@ -54,20 +55,20 @@ const ForgotPassword2 = () => {
 
       if (response.ok) {
         console.log("OTP Verified", result);
+
         router.push({
           pathname: "/(auth)/forgetpassword/forgotPassword3",
           params: { email },
         });
-        setLoading(false);
       } else {
+        console.error("Error verifying OTP:", result.message);
         setIsOtpInvalid(true);
-        console.error(result.error);
-        setLoading(false);
       }
     } catch (error) {
-      console.log("Error verifying OTP:", error);
-      Alert.alert("Error", "Network error. Try again.");
-      setLoading(false);
+        console.error("Error verifying OTP:", error);
+        Alert.alert("Error", "Unable to verify OTP. Please try again.");
+    } finally {
+        setLoading(false);
     }
   };
 

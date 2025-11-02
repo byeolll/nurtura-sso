@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
@@ -23,8 +23,6 @@ const CreatePassword = () => {
   const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(false);
-
-  const { email } = useLocalSearchParams();
 
   const [loading, setLoading] = useState(false); // for loading
 
@@ -108,16 +106,18 @@ const CreatePassword = () => {
     setLoading(true);
 
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
+
       try {
-        router.push({
-          pathname: "/(auth)/signup/createUserInfo",
-          params: { email, password },
-        });
-        setLoading(false);
-      } catch (error: any) {
-        Alert.alert("Signup Failed", error.message);
-        setLoading(false);
+        console.log("Password set successfully.")
+        router.push("/(auth)/signup/createUserInfo");
+
+      } catch (error : any) {
+          console.error("Error resetting password:", error);
+          Alert.alert("Error", "Unable to reset password. Please try again.");
+      } finally{
+          setLoading(false);
       }
+
     } else {
       Alert.alert("Invalid Password", "Please check your inputs again.");
       setLoading(false);

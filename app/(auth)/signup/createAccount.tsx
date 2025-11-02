@@ -25,8 +25,40 @@ const CreateAccount = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [isFirstMount, setIsFirstMount] = useState(true);
 
   const { googleSignUp } = useAuth();
+
+  // Clear SecureStore on first entry
+  useEffect(() => {
+    const clearStorageOnFirstEntry = async () => {
+      if (isFirstMount) {
+        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+        await SecureStore.deleteItemAsync("signup_email");
+        await SecureStore.deleteItemAsync("verified_email"); 
+        await SecureStore.deleteItemAsync("signup_password");
+        await SecureStore.deleteItemAsync("signup_confirm_password");
+        await SecureStore.deleteItemAsync("firebaseToken");
+        setIsFirstMount(false);
+      }
+    };
+
+    clearStorageOnFirstEntry();
+  }, []);
+
+  // Load saved email when component mounts
+  useEffect(() => {
+    const loadSavedEmail = async () => {
+      if (!isFirstMount){
+        const savedEmail = await SecureStore.getItemAsync("signup_email");
+        if (savedEmail) {
+          setEmail(savedEmail);
+          validateEmail(savedEmail);
+        }
+      }
+    };
+    loadSavedEmail();
+  }, [isFirstMount]);
 
   useFocusEffect(
     useCallback(() => {
@@ -41,7 +73,7 @@ const CreateAccount = () => {
               await SecureStore.deleteItemAsync("signup_password"); // passward
               await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
               await SecureStore.deleteItemAsync("verified_email"); // Clear verification
-              await SecureStore.deleteItemAsync("signup_email"); // Clear saved emai
+              await SecureStore.deleteItemAsync("signup_email"); // Clear saved email
               router.back();
             },
           },
@@ -57,18 +89,6 @@ const CreateAccount = () => {
       return () => backHandler.remove();
     }, [])
   );
-
-  // Load saved email when component mounts
-  useEffect(() => {
-    const loadSavedEmail = async () => {
-      const savedEmail = await SecureStore.getItemAsync("signup_email");
-      if (savedEmail) {
-        setEmail(savedEmail);
-        validateEmail(savedEmail);
-      }
-    };
-    loadSavedEmail();
-  }, []);
 
   const removeEmojis = (text: string) => {
     return text.replace(
@@ -103,10 +123,9 @@ const CreateAccount = () => {
         return true; // Email taken
       }
 
-      return false; // Email available
+        return false; // Email available
     } catch (error) {
-      console.error("Error checking email:", error);
-      throw error;
+        throw error;
     }
   };
 
@@ -144,19 +163,24 @@ const CreateAccount = () => {
 
       if (verifiedEmail === email) {
         console.log("Email already verified, skipping OTP");
-        router.push({
-          pathname: "/(auth)/signup/createPassword",
-          params: { email },
-        });
+
+        router.push("/(auth)/signup/createPassword");
         setLoading(false);
         return;
       }
 
-      const emailTaken = await isEmailAlreadyRegistered(email);
+      try{
+        const emailTaken = await isEmailAlreadyRegistered(email);
 
-      if (emailTaken) {
+        if (emailTaken) {
+          setLoading(false);
+          return Alert.alert("Error", "Email is already registered!");
+        }
+
+      } catch(error){
+        console.error("Error checking email:", error);
         setLoading(false);
-        return Alert.alert("Error", "Email is already registered!");
+        return Alert.alert("Error", "An error occured when verifying the email.");
       }
 
       const otp = Math.floor(10000 + Math.random() * 90000);
@@ -183,22 +207,19 @@ const CreateAccount = () => {
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert("Success", "OTP has been sent to your email.");
         console.log("Email sent successfully:", result);
-        router.push({
-          pathname: "/(auth)/signup/emailOTP",
-          params: { email },
-        });
+        Alert.alert("Success", "OTP has been sent to your email.");
+        
+        router.push("/(auth)/signup/emailOTP");
       } else {
-        Alert.alert("Error", result.message || "Failed to send OTP.");
-        console.error(result.error);
-        setLoading(false);
+        console.error("Error sending OTP:", result.message);
+        Alert.alert("Error", "Failed to send OTP.");
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
-      Alert.alert("Error", "Unable to send OTP. Please try again later.");
+        console.error("Error sending OTP:", error);
+        Alert.alert("Error", "Unable to send OTP. Please try again later.");
     } finally {
-      setLoading(false);
+       setLoading(false);
     }
   };
 
@@ -222,7 +243,7 @@ const CreateAccount = () => {
 
       console.log("Google Sign-Up successful");
     } catch (error: any) {
-      console.log("Google Sign-Up Error:", error);
+      console.error("Google Sign-Up Error:", error);
       Alert.alert("Google Sign-Up Failed", error.message);
     } finally {
       setLoading(false);
