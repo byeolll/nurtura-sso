@@ -58,9 +58,11 @@ const ForgotPassword2 = () => {
           pathname: "/(auth)/forgetpassword/forgotPassword3",
           params: { email },
         });
+        setLoading(false);
       } else {
         setIsOtpInvalid(true);
         console.error(result.error);
+        setLoading(false);
       }
     } catch (error) {
       console.log("Error verifying OTP:", error);
