@@ -1,6 +1,15 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import React, { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import * as SecureStore from "expo-secure-store";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Alert,
+  BackHandler,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const ForgotPassword1 = () => {
   const [isEmailValid, setIsEmailValid] = useState(false);
@@ -10,6 +19,68 @@ const ForgotPassword1 = () => {
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
+
+  const [isFirstMount, setIsFirstMount] = useState(true);
+
+  useEffect(() => {
+    const clearStorageOnFirstEntry = async () => {
+      if (isFirstMount) {
+        await SecureStore.deleteItemAsync("forgot_password_email");
+        await SecureStore.deleteItemAsync("forgot_password_verified_email");
+        await SecureStore.deleteItemAsync("forgot_password_new_password");
+        await SecureStore.deleteItemAsync("forgot_password_confirm_password");
+        setIsFirstMount(false);
+      }
+    };
+
+    clearStorageOnFirstEntry();
+  }, []);
+
+  useEffect(() => {
+    const loadSavedEmail = async () => {
+      const savedEmail = await SecureStore.getItemAsync(
+        "forgot_password_email"
+      );
+      if (savedEmail) {
+        setEmail(savedEmail);
+        validateEmail(savedEmail);
+      }
+    };
+    loadSavedEmail();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        Alert.alert("Go back?", "Your process will be deleted and cleared.", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: async () => {
+              await SecureStore.deleteItemAsync("forgot_password_email");
+              await SecureStore.deleteItemAsync(
+                "forgot_password_verified_email"
+              );
+              await SecureStore.deleteItemAsync("forgot_password_new_password");
+              await SecureStore.deleteItemAsync(
+                "forgot_password_confirm_password"
+              );
+              router.back();
+            },
+          },
+        ]);
+        return true; // prevent default back action
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [])
+  );
 
   const cleanInput = (text: string) => {
     return text
@@ -41,7 +112,8 @@ const ForgotPassword1 = () => {
 
   const isEmailAlreadyRegistered = async (email: string) => {
     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/check-email`,
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/users/check-email`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -53,9 +125,9 @@ const ForgotPassword1 = () => {
         return true; // Email taken
       }
 
-        return false; // Email available
+      return false; // Email available
     } catch (error) {
-        throw error;
+      throw error;
     }
   };
 
@@ -64,19 +136,46 @@ const ForgotPassword1 = () => {
 
     setLoading(true);
 
-    try{
+    try {
+      const savedEmail = await SecureStore.getItemAsync(
+        "forgot_password_email"
+      );
+      const verifiedEmail = await SecureStore.getItemAsync(
+        "forgot_password_verified_email"
+      );
+
+      if (savedEmail && savedEmail !== email) {
+        console.log("Email changed, clearing previous data");
+        await SecureStore.deleteItemAsync("forgot_password_verified_email");
+        await SecureStore.deleteItemAsync("forgot_password_new_password");
+        await SecureStore.deleteItemAsync("forgot_password_confirm_password");
+      }
+
+      await SecureStore.setItemAsync("forgot_password_email", email);
+
+      // Skip OTP if already verified
+      if (verifiedEmail === email) {
+        console.log("Email already verified, skipping OTP");
+        router.push({
+          pathname: "/(auth)/forgetpassword/forgotPassword3",
+          params: { email },
+        });
+        setLoading(false);
+        return;
+      }
+
       const emailTaken = await isEmailAlreadyRegistered(email);
 
       if (!emailTaken) {
         setLoading(false);
         return Alert.alert("Error", "Email is not registered!");
       }
-    } catch (error){
-        console.error("Error checking email:", error);
-        setLoading(false);
-        return Alert.alert("Error", "An error occured when verifying the email.");
+    } catch (error) {
+      console.error("Error checking email:", error);
+      setLoading(false);
+      return Alert.alert("Error", "An error occured when verifying the email.");
     }
-    
+
     try {
       const otp = Math.floor(10000 + Math.random() * 90000);
       const currentTime = new Date();
@@ -86,11 +185,8 @@ const ForgotPassword1 = () => {
         minute: "2-digit",
       });
 
-      const EMAIL_BORDER_COLOR = emailError
-        ? "border-red-500"
-        : "border-[#919191]";
-
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`,
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/email-service/forgot-password-otp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -107,20 +203,23 @@ const ForgotPassword1 = () => {
       if (response.ok) {
         console.log("Email sent successfully:", result);
         Alert.alert("Success", "OTP has been sent to your email.");
+        setLoading(false);
 
         router.push({
           pathname: "/(auth)/forgetpassword/forgotPassword2",
           params: { email },
         });
       } else {
+        setLoading(false);
         console.error("Error sending OTP:", result.message);
         Alert.alert("Error", "Failed to send OTP.");
       }
     } catch (error) {
-        console.error("Error sending OTP:", error);
-        Alert.alert("Error", "Unable to send OTP. Please try again later.");
+      setLoading(false);
+      console.error("Error sending OTP:", error);
+      Alert.alert("Error", "Unable to send OTP. Please try again later.");
     } finally {
-       setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -145,7 +244,7 @@ const ForgotPassword1 = () => {
             keyboardType="email-address"
             autoCapitalize="none"
             onChangeText={handleEmailChange}
-            value={email} 
+            value={email}
           />
         </View>
 

@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -14,6 +15,40 @@ const ForgotPassword3 = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    const loadPasswords = async () => {
+      const savedPassword = await SecureStore.getItemAsync(
+        "forgot_password_new_password"
+      );
+      const savedConfirm = await SecureStore.getItemAsync(
+        "forgot_password_confirm_password"
+      );
+
+      if (savedPassword) setPassword(savedPassword);
+      if (savedConfirm) setConfirmPassword(savedConfirm);
+    };
+    loadPasswords();
+  }, []);
+
+  useEffect(() => {
+    const savePasswords = async () => {
+      if (password)
+        await SecureStore.setItemAsync(
+          "forgot_password_new_password",
+          password
+        );
+      if (confirmPassword)
+        await SecureStore.setItemAsync(
+          "forgot_password_confirm_password",
+          confirmPassword
+        );
+    };
+    savePasswords();
+  }, [password, confirmPassword]);
+
   const cleanInput = (text: string) => {
     return text
       .replace(/\s/g, "") // remove spaces
@@ -27,8 +62,7 @@ const ForgotPassword3 = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   // para sa password inputs
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  
 
   // password validation
   const [isPasswordValid, setIsPasswordValid] = useState(false);
@@ -38,7 +72,6 @@ const ForgotPassword3 = () => {
   const [loading, setLoading] = useState(false);
 
   const { email } = useLocalSearchParams();
-  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
 
   // pang-enable lang sa Next button
   const isNextButtonEnabled =
@@ -94,7 +127,8 @@ const ForgotPassword3 = () => {
 
     if (passwordsMatch && isPasswordValid && isConfirmPasswordValid) {
       try {
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/reset-password`,
+        const response = await fetch(
+          `http://${LOCAL_IP}:${PORT}/users/reset-password`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -104,19 +138,29 @@ const ForgotPassword3 = () => {
 
         const result = await response.json();
 
-        if (response.ok){
+        if (response.ok) {
           console.log("Password changed successfully:", result);
+
+          // Clear all forgot password data
+          await SecureStore.deleteItemAsync("forgot_password_email");
+          await SecureStore.deleteItemAsync("forgot_password_verified_email");
+          await SecureStore.deleteItemAsync("forgot_password_new_password");
+          await SecureStore.deleteItemAsync("forgot_password_confirm_password");
+
           Alert.alert("Success", "Password has been reset.");
           router.replace("/(auth)/login");
-        } else{
+        } else {
           console.error("Error:", result.message);
-          return Alert.alert("Error", "An error occured when resetting the password.");
+          return Alert.alert(
+            "Error",
+            "An error occured when resetting the password."
+          );
         }
       } catch (error) {
-          console.error("Error resetting password:", error);
-          Alert.alert("Error", "Unable to reset password. Please try again.");
-      } finally{
-          setLoading(false);
+        console.error("Error resetting password:", error);
+        Alert.alert("Error", "Unable to reset password. Please try again.");
+      } finally {
+        setLoading(false);
       }
     }
   };
