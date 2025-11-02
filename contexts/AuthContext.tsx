@@ -1,10 +1,8 @@
 import { auth } from '@/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { router } from 'expo-router';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
-  onAuthStateChanged,
   signInWithCredential,
   signInWithEmailAndPassword,
   signOut
@@ -16,9 +14,8 @@ export interface UserInfo {
   email: string | null;
   firstName: string | null;
   lastName: string | null;
-  username: string | null;
-  photo?: string | null;
-  birthday?: string | null; 
+  token: string | null;
+  //birthday?: string | null; 
 }
 
 interface AuthContextType {
@@ -26,8 +23,8 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string) => Promise<{ user: any, token: string }>;
   signIn: (email: string, password: string) => Promise<void>;
-  googleSignIn: () => Promise<void>;
-  googleSignUp: (onNewUserRedirect?: (userData: UserInfo) => void) => Promise<void>;
+  googleSignIn: () => Promise<{ userData: any }>;
+  googleSignUp: () => Promise<{ userData: any }>;
   logout: () => Promise<void>;
 }
 
@@ -48,28 +45,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        const displayName = firebaseUser.displayName || '';
-        const [firstName, lastName] = displayName.split(' ');
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+  //     if (firebaseUser) {
+  //       const displayName = firebaseUser.displayName || '';
+  //       const [firstName, lastName] = displayName.split(' ');
+  //       const firebaseToken = await firebaseUser.getIdToken();
 
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          firstName: firstName || null,
-          lastName: lastName || null,
-          username: firebaseUser.email?.split('@')[0] || null,
-          photo: firebaseUser.photoURL || null,
-        });
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+  //       setUser({
+  //         uid: firebaseUser.uid,
+  //         email: firebaseUser.email,
+  //         firstName: firstName || null,
+  //         lastName: lastName || null,
+  //         token: firebaseToken
+  //       });
+  //     } else {
+  //       setUser(null);
+  //     }
+  //     setLoading(false);
+  //   });
 
-    return unsubscribe;
-  }, []);
+  //   return unsubscribe;
+  // }, []);
 
   const signUp = async (email: string, password: string) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -86,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await signInWithEmailAndPassword(auth, email, password);
     };
 
-  const googleSignIn = async () => {
+  const googleSignIn = async (): Promise<{ userData: UserInfo }> => {
     try {
       await GoogleSignin.hasPlayServices();
       const result = await GoogleSignin.signIn();
@@ -97,22 +94,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const userCredential = await signInWithCredential(auth, credential);
       const additionalInfo = (userCredential as any).additionalUserInfo;
 
-      // pang check if existing
-      if (additionalInfo?.isNewUser) {
-        throw new Error('This account is not registered. Please use Sign Up instead.');
-      }
-
       const firebaseUser = userCredential.user;
+      const firebaseToken = await firebaseUser.getIdToken();
       const googleUser = result.data?.user;
 
-      setUser({
+      // setUser({
+      //   uid: firebaseUser.uid,
+      //   email: firebaseUser.email,
+      //   firstName: googleUser?.givenName || null,
+      //   lastName: googleUser?.familyName || null,
+      //   token: firebaseToken
+      // });
+
+      const userData: UserInfo = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
         firstName: googleUser?.givenName || null,
         lastName: googleUser?.familyName || null,
-        username: firebaseUser.email?.split('@')[0] || null,
-        photo: firebaseUser.photoURL || null,
-      });
+        token: firebaseToken,
+      };
+
+      return { userData };
 
     } catch (error) {
       console.error('Google Sign-In Error:', error);
@@ -120,17 +122,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const googleSignUp = async (onNewUserRedirect?: (userData: UserInfo) => void) => {
+  const googleSignUp = async (): Promise<{ userData: UserInfo }> => {
     try {
       await GoogleSignin.hasPlayServices();
       const result = await GoogleSignin.signIn();
       const idToken = result.data?.idToken;
-      if (!idToken) throw new Error('No ID token returned from Google');
+      if (!idToken) throw new Error("No ID token returned from Google");
 
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
       const additionalInfo = (userCredential as any).additionalUserInfo;
       const firebaseUser = userCredential.user;
+      const firebaseToken = await firebaseUser.getIdToken();
       const googleUser = result.data?.user;
 
       const userData: UserInfo = {
@@ -138,28 +141,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: firebaseUser.email,
         firstName: googleUser?.givenName || null,
         lastName: googleUser?.familyName || null,
-        username: firebaseUser.email?.split('@')[0] || null,
-        photo: firebaseUser.photoURL || null,
+        token: firebaseToken,
       };
 
-      if (additionalInfo?.isNewUser) {
-        console.log('New Google user detected, redirecting to createUserInfo...');
-        if (onNewUserRedirect) {
-          onNewUserRedirect(userData);
-        } else {
-          router.replace(`/(auth)/signup/createUserInfo?fromGoogle=true`);
-        }
-      } else {
-        console.log('User already exists, please sign in instead.');
+      return { userData };
+
+      } catch (error: any) {
+        throw new Error(error.message);
       }
-
-      setUser(userData);
-
-    } catch (error) {
-      console.error('Google Sign-Up Error:', error);
-      throw error;
-    }
-  };
+    };
 
   const logout = async () => {
     try {

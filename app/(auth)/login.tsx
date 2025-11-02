@@ -22,6 +22,9 @@ export default function LoginScreen() {
   const { signIn, googleSignIn } = useAuth();
   const navigation = useNavigation();
 
+  const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
+  const PORT = process.env.EXPO_PUBLIC_PORT;
+
   const cleanInput = (text: string) => {
     return text
       .replace(/\s/g, "")
@@ -67,32 +70,39 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGooglePress = async () => {
-    setLoading(true);
-    try {
-      await googleSignIn();
-      router.replace("/(tabs)/profile");
-    } catch (error: any) {
-      console.error("Google Sign-In Error:", error);
+const handleGooglePress = async () => {
+  setLoading(true);
+  try {
+    const { userData } = await googleSignIn();
 
-      if (
-        error.message?.includes("not registered") ||
-        error.message?.includes("Please use Sign Up instead")
-      ) {
-        Alert.alert(
-          "Account Not Found",
-          "This Google account isn’t registered. Please sign up first."
-        );
-      } else {
-        Alert.alert(
-          "Google Sign-In Failed",
-          error.message || "Please try again."
-        );
-      }
-    } finally {
-      setLoading(false);
+    const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/SSO-isNewUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userData.email }),
+    });
+
+    const result = await response.json();
+
+    if (response.status === 404) {
+      return Alert.alert("Error", "Account not found. Please sign up.");
     }
-  };
+
+    if (result.isNewUser) {
+      return Alert.alert("Error", "This account is not registered. Please use Sign Up instead.");
+    }
+    
+    router.replace({
+      pathname: "/(tabs)/profile",
+      params: { email: userData.email }
+    });
+
+  } catch (error) {
+    console.error("Google Sign-In Error:", error);
+    Alert.alert("Google Sign-In Failed", "Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleForgotPassword = () => {
     router.push("/(auth)/forgetpassword/forgotPassword1");
