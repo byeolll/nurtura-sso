@@ -68,15 +68,15 @@ const ForgotPassword1 = () => {
       const emailTaken = await isEmailAlreadyRegistered(email);
 
       if (!emailTaken) {
+        setLoading(false);
         return Alert.alert("Error", "Email is not registered!");
       }
     } catch (error){
         console.error("Error checking email:", error);
-        return Alert.alert("Error", "An error occured when verifying the email.");
-    } finally {
         setLoading(false);
+        return Alert.alert("Error", "An error occured when verifying the email.");
     }
-
+    
     try {
       const otp = Math.floor(10000 + Math.random() * 90000);
       const currentTime = new Date();
@@ -107,7 +107,7 @@ const ForgotPassword1 = () => {
       if (response.ok) {
         console.log("Email sent successfully:", result);
         Alert.alert("Success", "OTP has been sent to your email.");
-        
+
         router.push({
           pathname: "/(auth)/forgetpassword/forgotPassword2",
           params: { email },
