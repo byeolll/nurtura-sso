@@ -127,8 +127,8 @@ WheelScrollPicker.displayName = "WheelScrollPicker";
 
 const CreateUserInfo = () => {
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [suffix, setSuffix] = useState("");
 
   const [block, setBlock] = useState("");
@@ -147,17 +147,10 @@ const CreateUserInfo = () => {
   const [loading, setLoading] = useState(false);
 
   const {
-    email,
-    password,
     fromGoogle,
     firstName: googleFirstName,
     lastName: googleLastName,
   } = useLocalSearchParams();
-
-  const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
-  const normalizedPassword = Array.isArray(password)
-    ? password[0]
-    : password || "";
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -182,13 +175,19 @@ const CreateUserInfo = () => {
         if (savedData) {
           const parsed = JSON.parse(savedData);
           setFirstName(parsed.firstName || "");
+          setMiddleName(parsed.middleName || "")
           setLastName(parsed.lastName || "");
+          setSuffix(parsed.suffix || "");
+          setBlock(parsed.block || "");
+          setStreet(parsed.street || "");
+          setBarangay(parsed.barangay || "");
+          setCity(parsed.city || "");
           setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
           setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
           setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
         }
       } catch (err) {
-        console.log("Error loading saved user info:", err);
+        console.error("Error loading saved user info:", err);
       }
     })();
   }, []);
@@ -198,26 +197,38 @@ const CreateUserInfo = () => {
       try {
         const dataToSave = {
           firstName,
+          middleName,
           lastName,
+          suffix,
           selectedMonthIndex,
           selectedDayIndex,
           selectedYearIndex,
+          block,
+          street,
+          barangay,
+          city
         };
         await SecureStore.setItemAsync(
           USER_INFO_STORAGE_KEY,
           JSON.stringify(dataToSave)
         );
       } catch (err) {
-        console.log("Error saving user info:", err);
+        console.error("Error saving user info:", err);
       }
     };
     saveUserInfo();
   }, [
-    firstName,
-    lastName,
-    selectedMonthIndex,
-    selectedDayIndex,
-    selectedYearIndex,
+      firstName,
+      middleName,
+      lastName,
+      suffix,
+      selectedMonthIndex,
+      selectedDayIndex,
+      selectedYearIndex,
+      block,
+      street,
+      barangay,
+      city
   ]);
 
   // Memoize static data
@@ -255,7 +266,35 @@ const CreateUserInfo = () => {
   const handleSubmitUserInfo = async () => {
     setLoading(true);
     try {
-      const { token } = await signUp(normalizedEmail, normalizedPassword);
+      const savedData = await SecureStore.getItemAsync(USER_INFO_STORAGE_KEY);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setFirstName(parsed.firstName || "");
+        setMiddleName(parsed.middleName || "")
+        setLastName(parsed.lastName || "");
+        setSuffix(parsed.suffix || "");
+        setBlock(parsed.block || "");
+        setStreet(parsed.street || "");
+        setBarangay(parsed.barangay || "");
+        setCity(parsed.city || "");
+        setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
+        setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
+        setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
+      }
+
+      // pakipalitan nito once na okay na yung SecureStore
+      //const verifiedEmail = await SecureStore.getItemAsync("verified_email");
+      const verifiedEmail = await SecureStore.getItemAsync("signup_email");
+      const verifiedPassword = await SecureStore.getItemAsync("signup_confirm_password");
+
+      if (!verifiedEmail || !verifiedPassword) {
+        Alert.alert("Error", "Missing credentials");
+        return;
+      }
+
+      console.log(verifiedEmail, verifiedPassword)
+
+      const { token } = await signUp(verifiedEmail, verifiedPassword);
 
       if (!token) {
         Alert.alert("User not authenticated");
@@ -266,14 +305,13 @@ const CreateUserInfo = () => {
         firstName,
         middleName,
         lastName,
+        suffix,
         birthday: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
         block,
         street,
         barangay,
         city
       };
-
-      console.log("Sending User Details:", userDetails);
 
       const response = await fetch(
         `http://${LOCAL_IP}:${PORT}/users/register`,
@@ -287,38 +325,34 @@ const CreateUserInfo = () => {
         }
       );
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (response.status === 401) {
-        Alert.alert("Error", data.message); // Unauthorized Token/Access
+        Alert.alert("Error", result.message); // Unauthorized Token/Access
         setLoading(false);
         return;
       }
 
-      if (response.status === 409) {
-        Alert.alert("Error", data.message); // Username taken
-        setLoading(false);
-        return;
+      if (response.ok) {
+        console.log("User created successfully:", result);
+
+        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
+        await SecureStore.deleteItemAsync("signup_email");
+        await SecureStore.deleteItemAsync("verified_email"); 
+        await SecureStore.deleteItemAsync("signup_password");
+        await SecureStore.deleteItemAsync("signup_confirm_password");
+        await SecureStore.deleteItemAsync("firebaseToken");
+        Alert.alert("Success", "User profile saved!");
+      } else {
+        console.error("Error:", result.message);
+        return Alert.alert("Error", "Registration failed");
       }
 
-      if (!response.ok) {
-        Alert.alert("Error", "Registration failed");
-        setLoading(false);
-        return;
-      }
-
-      Alert.alert("Success", "User profile saved!");
-      await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-      await SecureStore.deleteItemAsync("signup_password");
-      await SecureStore.deleteItemAsync("signup_confirm_password");
-      await SecureStore.deleteItemAsync("firebaseToken");
-      await SecureStore.deleteItemAsync("verified_email"); 
-      await SecureStore.deleteItemAsync("email_verified");
-      await SecureStore.deleteItemAsync("signup_email");
     } catch (error) {
-      console.log("Error submitting user info:", error);
-      Alert.alert("Error", "Failed to submit user info");
-      setLoading(false);
+        console.error("Error submitting user info:", error);
+        Alert.alert("Error", "Failed to submit user info.");
+    } finally{
+        setLoading(false);
     }
   };
 
@@ -337,11 +371,6 @@ const CreateUserInfo = () => {
       ""
     );
   };
-
-  // const handleUsernameChange = (text: string) => {
-  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z0-9._-]/g, "");
-  //   setUsername(cleanText.slice(0, 30));
-  // };
 
   const handleFirstNameChange = (text: string) => {
     const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
@@ -363,25 +392,25 @@ const CreateUserInfo = () => {
     setSuffix(cleanText);
   }
 
-  // const handleBlockChange = (text: string) => {
-  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
-  //   setBlock(cleanText);
-  // }
+  const handleBlockChange = (text: string) => {
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    setBlock(cleanText);
+  }
 
-  // const handleStreetChange = (text: string) => {
-  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
-  //   setStreet(cleanText);
-  // }
+  const handleStreetChange = (text: string) => {
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    setStreet(cleanText);
+  }
 
-  // const handleBarangayChange = (text: string) => {
-  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
-  //   setBarangay(cleanText);
-  // }
+  const handleBarangayChange = (text: string) => {
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    setBarangay(cleanText);
+  }
 
-  // const handleCityChange = (text: string) => {
-  //   const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
-  //   setCity(cleanText);
-  // }
+  const handleCityChange = (text: string) => {
+    const cleanText = removeEmojis(text).replace(/[^A-Za-z ]/g, "");
+    setCity(cleanText);
+  }
 
 
   const openDatePicker = () => {
@@ -406,20 +435,6 @@ const CreateUserInfo = () => {
               your birthday to complete your registration.
             </Text>
           )}
-
-          {/* <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[5px] border-[#919191]">
-            <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-              Username
-            </Text>
-            <TextInput
-              className="text-black text-[16px]"
-              value={username}
-              onChangeText={handleUsernameChange}
-            />
-          </View>
-          <Text className="text-gray-500 text-[12px] pb-5 ml-2">
-            {username.length}/30
-          </Text> */}
 
           <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
