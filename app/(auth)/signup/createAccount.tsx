@@ -41,6 +41,7 @@ const CreateAccount = () => {
         await SecureStore.deleteItemAsync("verified_email"); 
         await SecureStore.deleteItemAsync("signup_password");
         await SecureStore.deleteItemAsync("signup_confirm_password");
+        await SecureStore.deleteItemAsync("fromGoogle"); // Clear saved email
         await SecureStore.deleteItemAsync("firebaseToken");
         setIsFirstMount(false);
       }
@@ -78,6 +79,7 @@ const CreateAccount = () => {
               await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
               await SecureStore.deleteItemAsync("verified_email"); // Clear verification
               await SecureStore.deleteItemAsync("signup_email"); // Clear saved email
+              await SecureStore.deleteItemAsync("fromGoogle"); // Clear saved email
               router.back();
             },
           },
@@ -161,6 +163,7 @@ const CreateAccount = () => {
         await SecureStore.deleteItemAsync("signup_password");
         await SecureStore.deleteItemAsync("signup_confirm_password");
         await SecureStore.deleteItemAsync("verified_email");
+        await SecureStore.deleteItemAsync("fromGoogle");
       }
 
       await SecureStore.setItemAsync("signup_email", email);
@@ -213,7 +216,8 @@ const CreateAccount = () => {
       if (response.ok) {
         console.log("Email sent successfully:", result);
         Alert.alert("Success", "OTP has been sent to your email.");
-        
+        await SecureStore.setItemAsync("fromGoogle", "false");
+
         router.push("/(auth)/signup/emailOTP");
       } else {
         console.error("Error sending OTP:", result.message);
@@ -244,9 +248,17 @@ const CreateAccount = () => {
         body: JSON.stringify({ email: userData.email }),
       });
 
-      const isNewUser = (response.status === 200);
+      const result = await response.json();
 
-      if (isNewUser) {
+      if (response.status === 404) {
+        return Alert.alert("Error", "Account not found. Please sign up.");
+      }
+
+      if (!result.isNewUser) {
+        return Alert.alert("Error", "This account is already registered. Please Log In instead.");
+      }
+
+      if (result.isNewUser) {
         const dataToSave = {
           email: userData.email ?? "",
           firstName: userData.firstName ?? "",
