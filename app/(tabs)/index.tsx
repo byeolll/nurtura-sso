@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, View, Alert } from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from "react";
+import { Alert, Image, StyleSheet, Text, View } from "react-native";
 
 const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
 const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -8,41 +9,42 @@ const PORT = process.env.EXPO_PUBLIC_PORT;
 export default function NurturaWelcome() {
   const { user } = useAuth();
   const [userInfo, setUserInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+    const { email } = useLocalSearchParams();
+    const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (!user?.email) return;
-      try {
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email }),
-        });
+      console.log("index:" + email);
 
-        const data = await response.json();
-        if (response.ok && data.userInfo) {
-          setUserInfo(data.userInfo);
-        } else {
-          console.log("No DB user info found, using Firebase/Google data");
-          setUserInfo({
-            username: user.username || "—",
-            first_name: user.firstName || "—",
-            last_name: user.lastName || "—",
-            email: user.email,
-            birthday: user.birthday || null,
-          });
-        }
-      } catch (err: any) {
-        console.error("Fetch user info failed:", err);
-        Alert.alert("Error", "Unable to fetch profile data.");
-      } finally {
-        setLoading(false);
+      if (!normalizedEmail) return;
+
+
+     try {
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(result.message);
+        setUserInfo(result.userInfo);
+      } else {
+          Alert.alert("Error", "No DB user info found, using Firebase/Google data");
       }
-    };
+
+    } catch (err: any) {
+      console.error("Fetch user info failed:", err);
+      Alert.alert("Error", "Unable to fetch profile data.");
+    }
+  };
 
     fetchUserInfo();
-  }, [user]);
+  }, []);
 
   if (loading) {
     return (
@@ -53,9 +55,9 @@ export default function NurturaWelcome() {
   }
 
   const fullName = `${userInfo?.first_name || "—"} ${userInfo?.last_name || ""}`;
-  const age = userInfo?.birthday
-    ? Math.floor((new Date().getTime() - new Date(userInfo.birthday).getTime()) / (1000 * 60 * 60 * 24 * 365))
-    : "—";
+  // const age = userInfo?.birthdate
+  //   ? Math.floor((new Date().getTime() - new Date(userInfo.birthdate).getTime()) / (1000 * 60 * 60 * 24 * 365))
+  //   : "—";
 
   return (
     <View style={styles.container}>
@@ -82,20 +84,20 @@ export default function NurturaWelcome() {
 
         <View style={styles.messageContainer}>
           <Text style={styles.boldText}>
-            <Text style={styles.placeholder}>{userInfo?.username || "—"}</Text>, doesn't have a Nurtura Rack
+            <Text style={styles.placeholder}>{userInfo?.first_name || "—"}</Text>, doesn't have a Nurtura Rack
           </Text>
         </View>
       </View>
 
       <View style={styles.bottomSection}>
         <View style={styles.infoBlock}>
-          <Text style={styles.boldText}>
+          {/* <Text style={styles.boldText}>
             Are you really <Text style={styles.placeholder}>{age}</Text> years old?
-          </Text>
-          <Text style={styles.subText}>
-            Check if <Text style={styles.placeholder}>{userInfo?.formattedBirthday || "—"}</Text> is your
+          </Text> */}
+          {/* <Text style={styles.boldText}>
+            Check if <Text style={styles.placeholder}>{userInfo?.formattedBirthdate || "—"}</Text> is your
             real birthday.
-          </Text>
+          </Text> */}
         </View>
 
         <View style={styles.infoBlock}>

@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -16,6 +17,7 @@ const ForgotPassword1 = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [email, setEmail] = React.useState("");
+  const { fetchSignInMethods } = useAuth();
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -133,7 +135,6 @@ const ForgotPassword1 = () => {
 
   const handleNextPress = async () => {
     if (!isNextButtonEnabled) return;
-
     setLoading(true);
 
     try {
@@ -143,15 +144,40 @@ const ForgotPassword1 = () => {
       const verifiedEmail = await SecureStore.getItemAsync(
         "forgot_password_verified_email"
       );
-
+      
+      
       if (savedEmail && savedEmail !== email) {
         console.log("Email changed, clearing previous data");
         await SecureStore.deleteItemAsync("forgot_password_verified_email");
         await SecureStore.deleteItemAsync("forgot_password_new_password");
         await SecureStore.deleteItemAsync("forgot_password_confirm_password");
       }
-
+      
       await SecureStore.setItemAsync("forgot_password_email", email);
+      
+      if (!email){
+        setLoading(false);
+        return Alert.alert("Error", "No email found or saved.");
+      }
+
+      const response = await fetch(
+        `http://${LOCAL_IP}:${PORT}/users/check-signIn-methods`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.providers.length > 0){
+        
+        if (result.providers.includes("google.com")) {
+          setLoading(false);
+          return Alert.alert("Error", "Reset password is not available for Google SSO users.");
+        }
+      }
 
       // Skip OTP if already verified
       if (verifiedEmail === email) {

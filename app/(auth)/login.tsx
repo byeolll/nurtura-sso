@@ -18,6 +18,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoginInvalid, setIsLoginInvalid] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
 
   const { signIn, googleSignIn } = useAuth();
   const navigation = useNavigation();
@@ -33,13 +35,27 @@ export default function LoginScreen() {
         ""
       );
   };
+  const validateEmail = (value: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regex.test(value)) {
+      setEmailError("Please enter a valid email address.");
+
+    } else {
+      setEmailError("");
+    }
+  };
 
   const handleEmailChange = (value: string) => {
     const cleaned = cleanInput(value);
     setEmail(cleaned);
-    if (cleaned.trim() === "" || password.trim() === "") {
+
+    if (cleaned.trim() === "") {
+      setEmailError("");
       setIsLoginInvalid(false);
+      return;
     }
+
+    validateEmail(cleaned);
   };
 
   const handlePasswordChange = (value: string) => {
@@ -70,39 +86,39 @@ export default function LoginScreen() {
     }
   };
 
-const handleGooglePress = async () => {
-  setLoading(true);
-  try {
-    const { userData } = await googleSignIn();
+  const handleGooglePress = async () => {
+    setLoading(true);
+    try {
+      const { userData } = await googleSignIn();
 
-    const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/SSO-isNewUser`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: userData.email }),
-    });
+      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/SSO-isNewUser`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userData.email }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (response.status === 404) {
-      return Alert.alert("Error", "Account not found. Please sign up.");
+      if (response.status === 404) {
+        return Alert.alert("Error", "Account not found. Please sign up.");
+      }
+
+      if (result.isNewUser) {
+        return Alert.alert("Error", "This account is not registered. Please use Sign Up instead.");
+      }
+
+      router.replace({
+        pathname: "/(tabs)/profile",
+        params: { email: userData.email }
+      });
+
+    } catch (error) {
+      console.error("Google Sign-In Error:", error);
+      Alert.alert("Google Sign-In Failed", "Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    if (result.isNewUser) {
-      return Alert.alert("Error", "This account is not registered. Please use Sign Up instead.");
-    }
-    
-    router.replace({
-      pathname: "/(tabs)/profile",
-      params: { email: userData.email }
-    });
-
-  } catch (error) {
-    console.error("Google Sign-In Error:", error);
-    Alert.alert("Google Sign-In Failed", "Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleForgotPassword = () => {
     router.push("/(auth)/forgetpassword/forgotPassword1");
@@ -116,11 +132,14 @@ const handleGooglePress = async () => {
         resizeMode="contain"
       />
 
-      <View className="w-full mb-4 relative -top-[25%]">
+      <View className="w-full mb-4 flex-1 justify-start">
         <View
-          className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
-            isLoginInvalid ? "border-[#E65656]" : "border-[#919191]"
-          }`}
+          className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[6px] ${emailError
+            ? "border-[#E65656]"
+            : isLoginInvalid
+              ? "border-[#E65656]"
+              : "border-[#919191]"
+            }`}
         >
           <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
             Email
@@ -136,12 +155,16 @@ const handleGooglePress = async () => {
             selectTextOnFocus={false}
           />
         </View>
+        {emailError.length > 0 && (
+          <Text className="text-[#E65656] text-[13px] mt-1 pl-2 mb-[10px]">
+            {emailError}
+          </Text>
+        )}
 
         <View className="relative w-full mb-[5px]">
           <View
-            className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
-              isLoginInvalid ? "border-[#E65656]" : "border-[#919191]"
-            }`}
+            className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${isLoginInvalid ? "border-[#E65656]" : "border-[#919191]"
+              }`}
           >
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Password
