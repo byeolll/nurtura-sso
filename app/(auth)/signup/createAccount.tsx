@@ -473,6 +473,8 @@ const CreateAccount = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {'hahahha super haba neto promise wag nyo n buksan'}
       <Modal
         animationType="fade"
         transparent={true}
@@ -481,7 +483,7 @@ const CreateAccount = () => {
       >
         <View className="flex-1 bg-black/60 justify-center items-center px-6">
           <View className="bg-white rounded-2xl p-5 w-full max-w-[380px] max-h-[85%]">
-            {/* TITLE */}
+ 
             <Text className="text-[18px] font-bold text-center mb-3 text-black">
               {currentConsentType === "TS"
                 ? "Terms and Conditions"
@@ -513,8 +515,7 @@ const CreateAccount = () => {
                 if (isEndReached) setHasScrolledToEnd(true);
               }}
               scrollEventThrottle={16}
-            >
-              {/* FULL CONTENT */}
+            > 
               {currentConsentType === "TS" ? (
                 <>
                   <Text className="text-black font-bold text-[18px] mb-2">
@@ -655,6 +656,7 @@ const CreateAccount = () => {
           </View>
         </View>
       </Modal>
+      
     </View>
   );
 };
