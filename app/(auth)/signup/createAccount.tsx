@@ -397,7 +397,6 @@ const CreateAccount = () => {
       </View>
 
       <View className="w-full">
-        {"Terms and Conditions"}
         <View className="flex-row items-center justify-start pr-4">
           <TouchableOpacity onPress={handleCheckboxToggleTS}>
             <View
@@ -413,21 +412,21 @@ const CreateAccount = () => {
             <Text className="text-[13px] text-black leading-[20px]">
               I have read and agreed to all terms and conditions set with
               Nurtura's{" "}
-              <Text
-                className="text-[13px] font-semibold text-primary"
+              <TouchableOpacity
                 onPress={() => {
                   setCurrentConsentType("TS");
                   setShowConsentModal(true);
                 }}
               >
-                Terms of Service
-              </Text>
-              .
+                <Text className="text-[13px] font-semibold text-primary">
+                  Terms of Service
+                </Text>
+              </TouchableOpacity>
+              <Text>.</Text>
             </Text>
           </View>
         </View>
 
-        {"Privacy Policy"}
         <View className="flex-row items-center justify-start pr-4 mb-4 mt-3">
           <TouchableOpacity onPress={handleCheckboxTogglePP}>
             <View
@@ -474,7 +473,7 @@ const CreateAccount = () => {
         </TouchableOpacity>
       </View>
 
-      {'hahahha super haba neto promise wag nyo n buksan'}
+      {/* sobrang haba promise */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -483,13 +482,12 @@ const CreateAccount = () => {
       >
         <View className="flex-1 bg-black/60 justify-center items-center px-6">
           <View className="bg-white rounded-2xl p-5 w-full max-w-[380px] max-h-[85%]">
- 
             <Text className="text-[18px] font-bold text-center mb-3 text-black">
               {currentConsentType === "TS"
                 ? "Terms and Conditions"
                 : "Privacy Policy"}
             </Text>
- 
+
             <ScrollView
               className="border border-gray-200 rounded-xl p-3 mb-4"
               contentContainerStyle={{ paddingBottom: 40 }}
@@ -515,7 +513,7 @@ const CreateAccount = () => {
                 if (isEndReached) setHasScrolledToEnd(true);
               }}
               scrollEventThrottle={16}
-            > 
+            >
               {currentConsentType === "TS" ? (
                 <>
                   <Text className="text-black font-bold text-[18px] mb-2">
@@ -656,7 +654,6 @@ const CreateAccount = () => {
           </View>
         </View>
       </Modal>
-      
     </View>
   );
 };
