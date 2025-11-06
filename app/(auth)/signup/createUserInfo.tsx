@@ -177,9 +177,9 @@ const CreateUserInfo = () => {
             setStreet(parsed.street || "");
             setBarangay(parsed.barangay || "");
             setCity(parsed.city || "");
-            setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
-            setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
-            setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
+            // setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
+            // setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
+            // setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
           }
         }
       } catch (err) {
@@ -188,44 +188,44 @@ const CreateUserInfo = () => {
     })();
   }, []);
 
-  // useEffect(() => {
-  //   const saveUserInfo = async () => {
-  //     try {
-  //       const dataToSave = {
-  //         firstName,
-  //         middleName,
-  //         lastName,
-  //         suffix,
-  //         selectedMonthIndex,
-  //         selectedDayIndex,
-  //         selectedYearIndex,
-  //         block,
-  //         street,
-  //         barangay,
-  //         city
-  //       };
-  //       await SecureStore.setItemAsync(
-  //         USER_INFO_STORAGE_KEY,
-  //         JSON.stringify(dataToSave)
-  //       );
-  //     } catch (err) {
-  //       console.error("Error saving user info:", err);
-  //     }
-  //   };
-  //   saveUserInfo();
-  // }, [
-  //     firstName,
-  //     middleName,
-  //     lastName,
-  //     suffix,
-  //     selectedMonthIndex,
-  //     selectedDayIndex,
-  //     selectedYearIndex,
-  //     block,
-  //     street,
-  //     barangay,
-  //     city
-  // ]);
+  useEffect(() => {
+    const saveUserInfo = async () => {
+      try {
+        const dataToSave = {
+          firstName,
+          middleName,
+          lastName,
+          suffix,
+          // selectedMonthIndex,
+          // selectedDayIndex,
+          // selectedYearIndex,
+          block,
+          street,
+          barangay,
+          city
+        };
+        await SecureStore.setItemAsync(
+          USER_INFO_STORAGE_KEY,
+          JSON.stringify(dataToSave)
+        );
+      } catch (err) {
+        console.error("Error saving user info:", err);
+      }
+    };
+    saveUserInfo();
+  }, [
+      firstName,
+      middleName,
+      lastName,
+      suffix,
+      // selectedMonthIndex,
+      // selectedDayIndex,
+      // selectedYearIndex,
+      block,
+      street,
+      barangay,
+      city
+  ]);
 
   // // Memoize static data
   // const monthsList = useMemo(
