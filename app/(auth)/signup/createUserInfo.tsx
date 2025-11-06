@@ -1,4 +1,6 @@
+import { SSO_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createAccount";
 import { useAuth } from "@/contexts/AuthContext";
+import { auth } from "@/firebase";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
@@ -10,8 +12,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
-import { SSO_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createAccount";
 export const USER_INFO_STORAGE_KEY = "temp_user_info";
 
 // const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -278,25 +278,32 @@ const CreateUserInfo = () => {
         // setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
       }
 
-      if (fromGoogle === "false") {
+      let tokenToUse = firebaseToken;
 
+      if (fromGoogle === "false") {
         const verifiedEmail = await SecureStore.getItemAsync("verified_email");
         const verifiedPassword = await SecureStore.getItemAsync("signup_confirm_password");
 
         if (!verifiedEmail || !verifiedPassword) {
           Alert.alert("Error", "Missing credentials");
-          return;
-        }
-  
-        const { token } = await signUp(verifiedEmail, verifiedPassword);
-  
-        if (!token) {
-          Alert.alert("User not authenticated");
+          setLoading(false);
           return;
         }
 
-        setFirebaseToken(token);
+        const { token } = await signUp(verifiedEmail, verifiedPassword);
+        tokenToUse = token;
+      } else {
+        // refresh token from Firebase for Google sign-in
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          Alert.alert("Error", "Not signed in with Google.");
+          setLoading(false);
+          return;
+        }
+        tokenToUse = await currentUser.getIdToken(true); // true = force refresh
       }
+
+      setFirebaseToken(tokenToUse);
 
 
       const userDetails = {
@@ -317,7 +324,7 @@ const CreateUserInfo = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${firebaseToken}`,
+            Authorization: `Bearer ${tokenToUse}`,
           },
           body: JSON.stringify(userDetails),
         }

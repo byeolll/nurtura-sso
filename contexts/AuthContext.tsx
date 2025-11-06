@@ -1,5 +1,6 @@
 import { auth } from '@/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as SecureStore from 'expo-secure-store';
 import {
   createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
@@ -49,28 +50,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  // useEffect(() => {
-  //   const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-  //     if (firebaseUser) {
-  //       const displayName = firebaseUser.displayName || '';
-  //       const [firstName, lastName] = displayName.split(' ');
-  //       const firebaseToken = await firebaseUser.getIdToken();
+//   useEffect(() => {
+//    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+//     if (firebaseUser) {
+//       const firebaseToken = await firebaseUser.getIdToken();
+//       setUser({
+//         uid: firebaseUser.uid,
+//         email: firebaseUser.email,
+//         firstName: firebaseUser.displayName?.split(" ")[0] || null,
+//         lastName: firebaseUser.displayName?.split(" ")[1] || null,
+//         token: firebaseToken,
+//       });
+//     } else {
+//       setUser(null);
+//     }
 
-  //       setUser({
-  //         uid: firebaseUser.uid,
-  //         email: firebaseUser.email,
-  //         firstName: firstName || null,
-  //         lastName: lastName || null,
-  //         token: firebaseToken
-  //       });
-  //     } else {
-  //       setUser(null);
-  //     }
-  //     setLoading(false);
-  //   });
+//     setLoading(false);
+//   });
 
-  //   return unsubscribe;
-  // }, []);
+//   return unsubscribe;
+// }, []);
 
 
   const fetchSignInMethods = async (email: string) => {
@@ -106,10 +105,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
-      const additionalInfo = (userCredential as any).additionalUserInfo;
 
       const firebaseUser = userCredential.user;
       const firebaseToken = await firebaseUser.getIdToken();
+      await SecureStore.setItemAsync("firebaseToken", firebaseToken);
       const googleUser = result.data?.user;
 
       setUser({
@@ -147,23 +146,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
-      const additionalInfo = (userCredential as any).additionalUserInfo;
       const firebaseUser = userCredential.user;
       const firebaseToken = await firebaseUser.getIdToken();
+      await SecureStore.setItemAsync("firebaseToken", firebaseToken);
       const googleUser = result.data?.user;
 
       console.log("SignUp" + firebaseUser.email);
-
-        setUser({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        firstName: googleUser?.givenName || null,
-        lastName: googleUser?.familyName || null,
-        token: firebaseToken
-      });
-
-
-      setEmail(firebaseUser.email);
 
       const userData: UserInfo = {
         uid: firebaseUser.uid,

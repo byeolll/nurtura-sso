@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useLocalSearchParams } from 'expo-router';
+import { auth } from '@/firebase';
 import React, { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 
@@ -11,48 +11,46 @@ export default function NurturaWelcome() {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-    const { email } = useLocalSearchParams();
-    const normalizedEmail = Array.isArray(email) ? email[0] : email || "";
-
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      console.log("index:" + email);
+    const currentUser = auth.currentUser;
 
-      if (!normalizedEmail) return;
-
-
-     try {
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        console.log(result.message);
-        setUserInfo(result.userInfo);
-      } else {
-          Alert.alert("Error", "No DB user info found, using Firebase/Google data");
-      }
-
-    } catch (err: any) {
-      console.error("Fetch user info failed:", err);
-      Alert.alert("Error", "Unable to fetch profile data.");
+    if (!currentUser?.email) {
+      Alert.alert("Error", "No email found for current user.");
+      setLoading(false);
+      return;
     }
-  };
+
+    const emailToSend = currentUser.email.trim().toLowerCase();
+    console.log("📤 Sending email to backend:", emailToSend);
+
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailToSend }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.log("Backend error:", data);
+          Alert.alert("Error", data.message || "Failed to fetch user info");
+          return;
+        }
+
+        console.log("User info received:", data.userInfo);
+        setUserInfo(data.userInfo);
+      } catch (error) {
+        console.error("Network error:", error);
+        Alert.alert("Network Error", "Unable to fetch user info. Check connection.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchUserInfo();
   }, []);
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading profile...</Text>
-      </View>
-    );
-  }
 
   const fullName = `${userInfo?.first_name || "—"} ${userInfo?.last_name || ""}`;
   // const age = userInfo?.birthdate
