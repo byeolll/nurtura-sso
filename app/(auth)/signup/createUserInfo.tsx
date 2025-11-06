@@ -1,22 +1,20 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
-  Dimensions,
-  Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { SSO_INFO_STORAGE_KEY } from "@/app/(auth)/signup/createAccount";
 export const USER_INFO_STORAGE_KEY = "temp_user_info";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+// const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const ITEM_HEIGHT = 40;
 
 const WheelScrollPicker = React.memo(
@@ -138,15 +136,15 @@ const CreateUserInfo = () => {
   const [city, setCity] = useState("");
   const [fromGoogle, setFromGoogle] = useState("");
 
-  const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-  const [selectedYearIndex, setSelectedYearIndex] = useState(0);
+  // const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
+  // const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  // const [selectedYearIndex, setSelectedYearIndex] = useState(0);
 
-  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  // const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
   const [firebaseToken, setFirebaseToken] = useState("");
 
-  const { signUp } = useAuth();
+  const { email, signUp } = useAuth();
 
   const [loading, setLoading] = useState(false);
 
@@ -190,76 +188,76 @@ const CreateUserInfo = () => {
     })();
   }, []);
 
-  useEffect(() => {
-    const saveUserInfo = async () => {
-      try {
-        const dataToSave = {
-          firstName,
-          middleName,
-          lastName,
-          suffix,
-          selectedMonthIndex,
-          selectedDayIndex,
-          selectedYearIndex,
-          block,
-          street,
-          barangay,
-          city
-        };
-        await SecureStore.setItemAsync(
-          USER_INFO_STORAGE_KEY,
-          JSON.stringify(dataToSave)
-        );
-      } catch (err) {
-        console.error("Error saving user info:", err);
-      }
-    };
-    saveUserInfo();
-  }, [
-      firstName,
-      middleName,
-      lastName,
-      suffix,
-      selectedMonthIndex,
-      selectedDayIndex,
-      selectedYearIndex,
-      block,
-      street,
-      barangay,
-      city
-  ]);
+  // useEffect(() => {
+  //   const saveUserInfo = async () => {
+  //     try {
+  //       const dataToSave = {
+  //         firstName,
+  //         middleName,
+  //         lastName,
+  //         suffix,
+  //         selectedMonthIndex,
+  //         selectedDayIndex,
+  //         selectedYearIndex,
+  //         block,
+  //         street,
+  //         barangay,
+  //         city
+  //       };
+  //       await SecureStore.setItemAsync(
+  //         USER_INFO_STORAGE_KEY,
+  //         JSON.stringify(dataToSave)
+  //       );
+  //     } catch (err) {
+  //       console.error("Error saving user info:", err);
+  //     }
+  //   };
+  //   saveUserInfo();
+  // }, [
+  //     firstName,
+  //     middleName,
+  //     lastName,
+  //     suffix,
+  //     selectedMonthIndex,
+  //     selectedDayIndex,
+  //     selectedYearIndex,
+  //     block,
+  //     street,
+  //     barangay,
+  //     city
+  // ]);
 
-  // Memoize static data
-  const monthsList = useMemo(
-    () => [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ],
-    []
-  );
+  // // Memoize static data
+  // const monthsList = useMemo(
+  //   () => [
+  //     "January",
+  //     "February",
+  //     "March",
+  //     "April",
+  //     "May",
+  //     "June",
+  //     "July",
+  //     "August",
+  //     "September",
+  //     "October",
+  //     "November",
+  //     "December",
+  //   ],
+  //   []
+  // );
 
-  const daysList = useMemo(
-    () => Array.from({ length: 31 }, (_, i) => (i + 1).toString()),
-    []
-  );
+  // const daysList = useMemo(
+  //   () => Array.from({ length: 31 }, (_, i) => (i + 1).toString()),
+  //   []
+  // );
 
-  const yearsList = useMemo(
-    () =>
-      Array.from({ length: 100 }, (_, i) =>
-        (new Date().getFullYear() - i).toString()
-      ),
-    []
-  );
+  // const yearsList = useMemo(
+  //   () =>
+  //     Array.from({ length: 100 }, (_, i) =>
+  //       (new Date().getFullYear() - i).toString()
+  //     ),
+  //   []
+  // );
 
   const handleSubmitUserInfo = async () => {
     setLoading(true);
@@ -275,9 +273,9 @@ const CreateUserInfo = () => {
         setStreet(parsed.street || "");
         setBarangay(parsed.barangay || "");
         setCity(parsed.city || "");
-        setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
-        setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
-        setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
+        // setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
+        // setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
+        // setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
       }
 
       if (fromGoogle === "false") {
@@ -306,7 +304,7 @@ const CreateUserInfo = () => {
         middleName,
         lastName,
         suffix,
-        birthdate: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
+       // birthdate: `${yearsList[selectedYearIndex]}-${(selectedMonthIndex + 1).toString().padStart(2, "0")}-${daysList[selectedDayIndex].toString().padStart(2, "0")}`,
         block,
         street,
         barangay,
@@ -345,6 +343,8 @@ const CreateUserInfo = () => {
         await SecureStore.deleteItemAsync("firebaseToken");
         await SecureStore.deleteItemAsync("fromGoogle");
         Alert.alert("Success", "User profile saved!");
+
+        console.log("createUserInfo" + email);
 
         router.replace({
           pathname: "/(tabs)/profile",
@@ -421,13 +421,13 @@ const CreateUserInfo = () => {
   }
 
 
-  const openDatePicker = () => {
-    setIsDatePickerVisible(true);
-  };
+  // const openDatePicker = () => {
+  //   setIsDatePickerVisible(true);
+  // };
 
-  const closeDatePicker = () => {
-    setIsDatePickerVisible(false);
-  };
+  // const closeDatePicker = () => {
+  //   setIsDatePickerVisible(false);
+  // };
 
   return (
     <View className="flex-1 bg-white px-4">
@@ -535,7 +535,7 @@ const CreateUserInfo = () => {
             </View>
           </View>  
 
-          <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
+          {/* <View className="w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] border-[#919191]">
             <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
               Birthdate
             </Text>
@@ -545,9 +545,9 @@ const CreateUserInfo = () => {
                 {yearsList[selectedYearIndex]}
               </Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
-          {isDatePickerVisible && (
+          {/* {isDatePickerVisible && (
             <Modal
               visible={isDatePickerVisible}
               animationType="slide"
@@ -598,7 +598,7 @@ const CreateUserInfo = () => {
                 </View>
               </View>
             </Modal>
-          )}
+          )} */}
         </View>
       </ScrollView>
 

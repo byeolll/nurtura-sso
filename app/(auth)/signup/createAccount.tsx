@@ -41,6 +41,7 @@ const CreateAccount = () => {
         await SecureStore.deleteItemAsync("verified_email"); 
         await SecureStore.deleteItemAsync("signup_password");
         await SecureStore.deleteItemAsync("signup_confirm_password");
+        await SecureStore.deleteItemAsync("fromGoogle"); // Clear saved email
         await SecureStore.deleteItemAsync("firebaseToken");
         await SecureStore.deleteItemAsync("fromGoogle");
         setIsFirstMount(false);
@@ -248,9 +249,17 @@ const CreateAccount = () => {
         body: JSON.stringify({ email: userData.email }),
       });
 
-      const isNewUser = (response.status === 200);
+      const result = await response.json();
 
-      if (isNewUser) {
+      if (response.status === 404) {
+        return Alert.alert("Error", "Account not found. Please sign up.");
+      }
+
+      if (!result.isNewUser) {
+        return Alert.alert("Error", "This account is already registered. Please Log In instead.");
+      }
+
+      if (result.isNewUser) {
         const dataToSave = {
           email: userData.email ?? "",
           firstName: userData.firstName ?? "",

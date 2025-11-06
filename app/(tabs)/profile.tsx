@@ -18,6 +18,7 @@ export default function ProfileScreen() {
   useEffect(() => {
   const fetchUserInfo = async () => {
     console.log(normalizedEmail);
+    console.log(user?.email)
     
     if (!normalizedEmail) return;
 
@@ -25,7 +26,7 @@ export default function ProfileScreen() {
       const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail }),
+        body: JSON.stringify({ email }),
       });
 
       const result = await response.json();
@@ -33,6 +34,8 @@ export default function ProfileScreen() {
       if (response.ok) {
         console.log(result.message);
         setUserInfo(result.userInfo);
+      } else {
+          Alert.alert("Error", "No DB user info found, using Firebase/Google data");
       }
 
     } catch (err: any) {
@@ -99,9 +102,9 @@ export default function ProfileScreen() {
             <Text className="text-base text-gray-700">
               <Text className="font-semibold">Suffix: </Text>{userInfo.suffix || '—'}
             </Text>
-            <Text className="text-base text-gray-700">
+            {/* <Text className="text-base text-gray-700">
               <Text className="font-semibold">Birthdate: </Text>{userInfo.formattedBirthdate || '—'}
-            </Text>
+            </Text> */}
             <Text className="text-base text-gray-700">
               <Text className="font-semibold">Address: </Text>{userInfo.address || '—'}
             </Text>
