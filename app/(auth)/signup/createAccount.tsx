@@ -422,7 +422,6 @@ const CreateAccount = () => {
                   Terms of Service
                 </Text>
               </TouchableOpacity>
-              <Text>.</Text>
             </Text>
           </View>
         </View>
