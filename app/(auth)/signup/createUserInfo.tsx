@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -134,6 +134,7 @@ const CreateUserInfo = () => {
   const [street, setStreet] = useState("");
   const [barangay, setBarangay] = useState("");
   const [city, setCity] = useState("");
+  const [fromGoogle, setFromGoogle] = useState("");
 
   // const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
   // const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -147,9 +148,6 @@ const CreateUserInfo = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const {
-    fromGoogle,
-  } = useLocalSearchParams();
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -157,40 +155,32 @@ const CreateUserInfo = () => {
   useEffect(() => {
     (async () => {
       try {
-        if (fromGoogle === "true") {
-          const savedData = await SecureStore.getItemAsync(SSO_INFO_STORAGE_KEY);
+        const savedData = await SecureStore.getItemAsync(USER_INFO_STORAGE_KEY);
+        const fromGoogle = await SecureStore.getItemAsync("fromGoogle");
+        setFromGoogle(fromGoogle ? fromGoogle : "false");
 
+        if (fromGoogle === "true"){
+            if (savedData) {
+              const parsed = JSON.parse(savedData);
+              setFirstName(parsed.firstName || "");
+              setLastName(parsed.lastName || "");
+              setFirebaseToken(parsed.token || "");
+            }
+        } else {
           if (savedData) {
             const parsed = JSON.parse(savedData);
             setFirstName(parsed.firstName || "");
+            setMiddleName(parsed.middleName || "")
             setLastName(parsed.lastName || "");
-            setFirebaseToken(parsed.token || "");
+            setSuffix(parsed.suffix || "");
+            setBlock(parsed.block || "");
+            setStreet(parsed.street || "");
+            setBarangay(parsed.barangay || "");
+            setCity(parsed.city || "");
+            setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
+            setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
+            setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
           }
-        }
-
-      } catch (err) {
-        console.error("Error loading saved user info:", err);
-      }
-    })();
-  }, [fromGoogle]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const savedData = await SecureStore.getItemAsync(USER_INFO_STORAGE_KEY);
-        if (savedData) {
-          const parsed = JSON.parse(savedData);
-          setFirstName(parsed.firstName || "");
-          setMiddleName(parsed.middleName || "")
-          setLastName(parsed.lastName || "");
-          setSuffix(parsed.suffix || "");
-          setBlock(parsed.block || "");
-          setStreet(parsed.street || "");
-          setBarangay(parsed.barangay || "");
-          setCity(parsed.city || "");
-          // setSelectedMonthIndex(parsed.selectedMonthIndex ?? 0);
-          // setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
-          // setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
         }
       } catch (err) {
         console.error("Error loading saved user info:", err);
@@ -287,11 +277,11 @@ const CreateUserInfo = () => {
         // setSelectedDayIndex(parsed.selectedDayIndex ?? 0);
         // setSelectedYearIndex(parsed.selectedYearIndex ?? 0);
       }
-      
-      const verifiedEmail = await SecureStore.getItemAsync("verified_email");
-      const verifiedPassword = await SecureStore.getItemAsync("signup_confirm_password");
 
-      if (fromGoogle !== "true") {
+      if (fromGoogle === "false") {
+
+        const verifiedEmail = await SecureStore.getItemAsync("verified_email");
+        const verifiedPassword = await SecureStore.getItemAsync("signup_confirm_password");
 
         if (!verifiedEmail || !verifiedPassword) {
           Alert.alert("Error", "Missing credentials");

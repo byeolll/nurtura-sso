@@ -43,6 +43,7 @@ const CreateAccount = () => {
         await SecureStore.deleteItemAsync("signup_confirm_password");
         await SecureStore.deleteItemAsync("fromGoogle"); // Clear saved email
         await SecureStore.deleteItemAsync("firebaseToken");
+        await SecureStore.deleteItemAsync("fromGoogle");
         setIsFirstMount(false);
       }
     };
@@ -79,7 +80,7 @@ const CreateAccount = () => {
               await SecureStore.deleteItemAsync("signup_confirm_password"); // passward
               await SecureStore.deleteItemAsync("verified_email"); // Clear verification
               await SecureStore.deleteItemAsync("signup_email"); // Clear saved email
-              await SecureStore.deleteItemAsync("fromGoogle"); // Clear saved email
+              await SecureStore.deleteItemAsync("fromGoogle");
               router.back();
             },
           },
@@ -217,7 +218,7 @@ const CreateAccount = () => {
         console.log("Email sent successfully:", result);
         Alert.alert("Success", "OTP has been sent to your email.");
         await SecureStore.setItemAsync("fromGoogle", "false");
-
+        
         router.push("/(auth)/signup/emailOTP");
       } else {
         console.error("Error sending OTP:", result.message);
@@ -267,9 +268,10 @@ const CreateAccount = () => {
         }
         
         await SecureStore.setItemAsync(SSO_INFO_STORAGE_KEY, JSON.stringify(dataToSave));
-        
+        await SecureStore.setItemAsync("fromGoogle", "true");
+
         console.log("Google Sign-Up successful");
-        router.replace("/(auth)/signup/createUserInfo?fromGoogle=true");
+        router.replace("/(auth)/signup/createUserInfo");
       }
 
     } catch (error: any) {
