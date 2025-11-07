@@ -303,7 +303,7 @@ const CreateAccount = () => {
         await SecureStore.setItemAsync("fromGoogle", "true");
 
         console.log("Google Sign-Up successful");
-        router.replace("/(auth)/signup/createUserInfo");
+        router.push("/(auth)/signup/createUserInfo");
       }
     } catch (error: any) {
       console.error("Google Sign-Up Error:", error);

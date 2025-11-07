@@ -32,6 +32,7 @@ interface AuthContextType {
   googleSignIn: () => Promise<{ userData: any }>;
   googleSignUp: () => Promise<{ userData: any }>;
   logout: () => Promise<void>;
+  googleSignInAndVerify: (localIp: string, port: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>("");
+  const [googleLoggedIn, setGoogleLoggedIn] = useState(true);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -52,26 +54,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  useEffect(() => {
-   const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-    if (firebaseUser) {
-      const firebaseToken = await firebaseUser.getIdToken();
-      setUser({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        firstName: firebaseUser.displayName?.split(" ")[0] || null,
-        lastName: firebaseUser.displayName?.split(" ")[1] || null,
-        token: firebaseToken,
-      });
-    } else {
-      setUser(null);
-    }
+  if (googleLoggedIn) {
+    
+  }
 
-    setLoading(false);
-  });
+useEffect(() => {
+  if (googleLoggedIn) {
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const firebaseToken = await firebaseUser.getIdToken();
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          firstName: firebaseUser.displayName?.split(" ")[0] || null,
+          lastName: firebaseUser.displayName?.split(" ")[1] || null,
+          token: firebaseToken,
+        });
+      } else {
+        setUser(null);
+      }
+
+      setLoading(false);
+    });
 
   return unsubscribe;
+  }
 }, []);
+
+  const googleSignInAndVerify = async (localIp: string, port: string) => {
+    try {
+        const { userData } = await googleSignIn(); 
+
+        if (!userData?.email) {
+            await logout();
+            setGoogleLoggedIn(false);
+            throw new Error("No email found from Google account.");
+        }
+
+        const response = await fetch(`http://${localIp}:${port}/users/SSO-isNewUser`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userData.email }),
+        });
+
+        const result = await response.json();
+
+        if (response.status === 404 || result.isNewUser) {
+            await GoogleSignin.signOut(); 
+            await signOut(auth);
+            setUser(null);
+
+            setGoogleLoggedIn(false);
+
+            throw new Error(response.status === 404 ?
+                "Account not found. Please sign up." : 
+                "This account is not registered. Please use Sign Up instead."
+            );
+        }
+
+        setGoogleLoggedIn(true);
+
+    } catch (error: any) {
+        console.error("Verification Error:", error.message);
+        await logout(); 
+        return false; 
+    }
+};
 
 
   const fetchSignInMethods = async (email: string) => {
@@ -187,6 +235,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading,
         email,
         fetchSignInMethods,
+        googleSignInAndVerify,
         signUp,
         signIn,
         googleSignIn,
