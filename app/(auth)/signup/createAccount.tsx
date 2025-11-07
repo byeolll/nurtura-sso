@@ -281,13 +281,6 @@ const CreateAccount = () => {
         return Alert.alert("Error", "Account not found. Please sign up.");
       }
 
-      if (!result.isNewUser) {
-        return Alert.alert(
-          "Error",
-          "This account is already registered. Please Log In instead."
-        );
-      }
-
       if (result.isNewUser) {
         const dataToSave = {
           email: userData.email ?? "",

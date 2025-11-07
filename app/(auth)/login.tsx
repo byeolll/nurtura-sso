@@ -98,14 +98,6 @@ export default function LoginScreen() {
       }
       const success = await googleSignInAndVerify(LOCAL_IP, PORT);
 
-      if (success) {
-        
-      } else {
-        Alert.alert(
-          "Login Failed", 
-          "Account is not registered or a network error occurred. Please try again or sign up."
-        );
-      }
 
     } catch (error) {
       console.error("Google Sign-In Error:", error);
