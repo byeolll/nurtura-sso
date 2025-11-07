@@ -2,6 +2,8 @@ import { auth } from '@/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as SecureStore from 'expo-secure-store';
 import {
+  User,  
+  onAuthStateChanged,
   createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
   GoogleAuthProvider,
@@ -9,15 +11,15 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from 'firebase/auth';
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface UserInfo {
-  uid: string;
-  email: string | null;
+  uid: User['uid'] | null ;
+  email: User['email'] | null;
   firstName: string | null;
   lastName: string | null;
   token: string | null;
-  //birthday?: string | null; 
 }
 
 interface AuthContextType {
@@ -50,26 +52,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-//   useEffect(() => {
-//    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-//     if (firebaseUser) {
-//       const firebaseToken = await firebaseUser.getIdToken();
-//       setUser({
-//         uid: firebaseUser.uid,
-//         email: firebaseUser.email,
-//         firstName: firebaseUser.displayName?.split(" ")[0] || null,
-//         lastName: firebaseUser.displayName?.split(" ")[1] || null,
-//         token: firebaseToken,
-//       });
-//     } else {
-//       setUser(null);
-//     }
+  useEffect(() => {
+   const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    if (firebaseUser) {
+      const firebaseToken = await firebaseUser.getIdToken();
+      setUser({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        firstName: firebaseUser.displayName?.split(" ")[0] || null,
+        lastName: firebaseUser.displayName?.split(" ")[1] || null,
+        token: firebaseToken,
+      });
+    } else {
+      setUser(null);
+    }
 
-//     setLoading(false);
-//   });
+    setLoading(false);
+  });
 
-//   return unsubscribe;
-// }, []);
+  return unsubscribe;
+}, []);
 
 
   const fetchSignInMethods = async (email: string) => {
