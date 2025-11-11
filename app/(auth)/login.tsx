@@ -98,6 +98,12 @@ export default function LoginScreen() {
       }
       const success = await googleSignInAndVerify(LOCAL_IP, PORT);
 
+      if (success) {
+        router.replace("/(tabs)/profile");
+      } else {
+        Alert.alert("Google Sign-In Failed", "No account found. Please try again.");
+      }
+
 
     } catch (error) {
       console.error("Google Sign-In Error:", error);
