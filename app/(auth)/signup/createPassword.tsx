@@ -1,5 +1,5 @@
+import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/shared/button";
-import { PasswordInput } from "@/components/shared/password-input";
 import { useCreatePassword } from "@/hooks/useCreatePassword";
 import { Text, View } from "react-native";
 import "../../globals.css";

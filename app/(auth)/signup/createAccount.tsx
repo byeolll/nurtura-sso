@@ -1,9 +1,9 @@
+import { GoogleSignInButton } from "@/components/auth/google-button";
+import { InputField } from "@/components/auth/input-field";
+import { ConsentModal } from "@/components/auth/modal/consent-modal";
 import { Button } from "@/components/shared/button";
 import { Checkbox } from "@/components/shared/checkbox";
 import { Divider } from "@/components/shared/divider";
-import { GoogleSignInButton } from "@/components/shared/google-button";
-import { InputField } from "@/components/shared/input-field";
-import { ConsentModal } from "@/components/shared/modal/consent-modal";
 import { useCreateAccount } from "@/hooks/useCreateAccount";
 import { Text, View } from "react-native";
 import "../../globals.css";

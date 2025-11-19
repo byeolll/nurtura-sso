@@ -12,11 +12,11 @@ import { useGoogleSignIn } from "@/hooks/useGoogleSignIn";
 import { useLoginForm } from "@/hooks/useLoginForm";
 
 // Utils
+import { GoogleSignInButton } from "@/components/auth/google-button";
+import { InputField } from "@/components/auth/input-field";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/shared/button";
 import { Divider } from "@/components/shared/divider";
-import { GoogleSignInButton } from "@/components/shared/google-button";
-import { InputField } from "@/components/shared/input-field";
-import { PasswordInput } from "@/components/shared/password-input";
 import { validateLoginFields } from "@/utils/validation";
 
 export default function LoginScreen() {
