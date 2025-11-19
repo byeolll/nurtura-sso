@@ -1,13 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { cleanInput, validateEmail } from "@/utils/validation";
-import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { useCallback, useEffect, useState } from "react";
-import { Alert, BackHandler } from "react-native";
-
-export const USER_INFO_STORAGE_KEY = "user_info";
-export const SSO_INFO_STORAGE_KEY = "sso_temp_user_info";
+import { useEffect, useState } from "react";
+import { Alert } from "react-native";
+import { USER_INFO_STORAGE_KEY } from "./useCreateUserInfo";
+import { clearSignupStorage, SSO_INFO_STORAGE_KEY, useSignupBackHandler } from "./useSignUpBackHandler";
 
 export const useCreateAccount = () => {
   const [email, setEmail] = useState("");
@@ -17,24 +15,22 @@ export const useCreateAccount = () => {
   const [emailError, setEmailError] = useState("");
   const [isFirstMount, setIsFirstMount] = useState(true);
   const [showConsentModal, setShowConsentModal] = useState(false);
-  const [currentConsentType, setCurrentConsentType] = useState<"TS" | "PP" | null>(null);
+  const [currentConsentType, setCurrentConsentType] = useState<
+    "TS" | "PP" | null
+  >(null);
 
   const { googleSignUp } = useAuth();
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
   const PORT = process.env.EXPO_PUBLIC_PORT;
 
+  // Use the reusable back handler
+  useSignupBackHandler();
+
   useEffect(() => {
     const clearStorageOnFirstEntry = async () => {
       if (isFirstMount) {
-        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-        await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
-        await SecureStore.deleteItemAsync("signup_email");
-        await SecureStore.deleteItemAsync("verified_email");
-        await SecureStore.deleteItemAsync("signup_password");
-        await SecureStore.deleteItemAsync("signup_confirm_password");
-        await SecureStore.deleteItemAsync("fromGoogle");
-        await SecureStore.deleteItemAsync("firebaseToken");
+        await clearSignupStorage();
         setIsFirstMount(false);
       }
     };
@@ -42,6 +38,7 @@ export const useCreateAccount = () => {
     clearStorageOnFirstEntry();
   }, [isFirstMount]);
 
+  // ... rest of your existing code remains the same
   // Load saved email
   useEffect(() => {
     const loadSavedEmail = async () => {
@@ -55,39 +52,6 @@ export const useCreateAccount = () => {
     };
     loadSavedEmail();
   }, [isFirstMount]);
-
-  // Back handler
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        Alert.alert("Go back?", "Your process will be deleted and cleared.", [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Yes",
-            style: "destructive",
-            onPress: async () => {
-              await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-              await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
-              await SecureStore.deleteItemAsync("signup_password");
-              await SecureStore.deleteItemAsync("signup_confirm_password");
-              await SecureStore.deleteItemAsync("verified_email");
-              await SecureStore.deleteItemAsync("signup_email");
-              await SecureStore.deleteItemAsync("fromGoogle");
-              router.back();
-            },
-          },
-        ]);
-        return true;
-      };
-
-      const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction
-      );
-
-      return () => backHandler.remove();
-    }, [])
-  );
 
   const isEmailAlreadyRegistered = async (email: string) => {
     try {
@@ -135,7 +99,8 @@ export const useCreateAccount = () => {
   };
 
   const handleNextPress = async () => {
-    const isNextButtonEnabled = email.length > 0 && !emailError && isCheckedTS && isCheckedPP;
+    const isNextButtonEnabled =
+      email.length > 0 && !emailError && isCheckedTS && isCheckedPP;
     if (!isNextButtonEnabled) return;
 
     setLoading(true);
@@ -289,7 +254,8 @@ export const useCreateAccount = () => {
     setCurrentConsentType(null);
   };
 
-  const isNextButtonEnabled = email.length > 0 && !emailError && isCheckedTS && isCheckedPP;
+  const isNextButtonEnabled =
+    email.length > 0 && !emailError && isCheckedTS && isCheckedPP;
   const isGoogleButtonEnabled = isCheckedTS && isCheckedPP;
 
   return {

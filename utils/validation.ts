@@ -1,5 +1,4 @@
-// GENERAL 
-
+// GENERAL
 export const cleanInput = (text: string): string => {
   return text
     .replace(/\s/g, "")
@@ -8,13 +7,31 @@ export const cleanInput = (text: string): string => {
       ""
     );
 };
- 
-// EMAIL
 
+// USER INFO VALIDATION
+export const validateUserInfoFields = (
+  firstName: string,
+  lastName: string,
+  block: string,
+  street: string,
+  barangay: string,
+  city: string
+): boolean => {
+  return (
+    firstName.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    block.trim().length > 0 &&
+    street.trim().length > 0 &&
+    barangay.trim().length > 0 &&
+    city.trim().length > 0
+  );
+};
+
+// EMAIL
 export const isValidEmail = (email: string): boolean => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email);
-}; 
+};
 
 export const validateEmail = (email: string): string => {
   if (!email.trim()) {
@@ -22,7 +39,7 @@ export const validateEmail = (email: string): string => {
   }
   return isValidEmail(email) ? "" : "Please enter a valid email address.";
 };
- 
+
 export const validateLoginFields = (
   email: string,
   password: string
@@ -36,9 +53,7 @@ export const validateLoginFields = (
   return { isValid: true, message: "" };
 };
 
-
 // PASSWORD
-
 export interface PasswordValidationResult {
   isValid: boolean;
   errors: string[];
@@ -48,7 +63,9 @@ export interface PasswordValidationResult {
   isLongEnough: boolean;
 }
 
-export const validatePassword = (password: string): PasswordValidationResult => {
+export const validatePassword = (
+  password: string
+): PasswordValidationResult => {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasSymbol = /[^A-Za-z0-9]/.test(password);
   const hasDigit = /[0-9]/.test(password);

@@ -2,10 +2,12 @@ import { OTPInput } from "@/components/auth/otp-input";
 import { ResendCode } from "@/components/auth/resend-code";
 import { Button } from "@/components/shared/button";
 import { useEmailOTP } from "@/hooks/useEmailOTP";
+import { useSignupBackHandler } from "@/hooks/useSignUpBackHandler";
 import { Text, View } from "react-native";
 import "../../globals.css";
 
 const EmailOTP = () => {
+  useSignupBackHandler
   const {
     otp,
     inputs,

@@ -1,10 +1,12 @@
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/shared/button";
 import { useCreatePassword } from "@/hooks/useCreatePassword";
+import { useSignupBackHandler } from "@/hooks/useSignUpBackHandler";
 import { Text, View } from "react-native";
 import "../../globals.css";
 
 const CreatePassword = () => {
+  useSignupBackHandler();
   const {
     isPasswordVisible,
     password,
