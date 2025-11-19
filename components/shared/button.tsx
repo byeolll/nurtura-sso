@@ -1,5 +1,10 @@
 import React from "react";
-import { ActivityIndicator, Text, TouchableOpacity, TouchableOpacityProps } from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
+} from "react-native";
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -15,7 +20,15 @@ export const Button: React.FC<ButtonProps> = ({
   ...touchableProps
 }) => {
   const isPrimary = variant === "primary";
-  const bgColor = isPrimary ? "bg-primary" : "bg-white";
+ 
+  const getBgColor = () => {
+    if (disabled || loading) {
+      return "bg-[#919191]"; 
+    }
+    return isPrimary ? "bg-primary" : "bg-white";
+  };
+
+  const bgColor = getBgColor();
   const textColor = isPrimary ? "text-white" : "text-black";
 
   return (
