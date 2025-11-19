@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface PasswordInputProps {
@@ -7,6 +7,10 @@ interface PasswordInputProps {
   onChangeText: (text: string) => void;
   error?: string;
   isInvalid?: boolean;
+  isVisible?: boolean;
+  onToggleVisibility?: () => void;
+  className?: string;
+  style?: { borderColor?: string };
 }
 
 export const PasswordInput: React.FC<PasswordInputProps> = ({
@@ -15,13 +19,20 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   onChangeText,
   error,
   isInvalid,
+  isVisible = false,
+  onToggleVisibility,
+  className = "",
+  style = {},
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
   const hasError = error && error.length > 0;
-  const borderColor = hasError || isInvalid ? "#E65656" : "#919191";
+  
+  // Use custom border color if provided, otherwise calculate based on state
+  const borderColor = style.borderColor 
+    ? style.borderColor 
+    : hasError || isInvalid ? "#E65656" : "#919191";
 
   return (
-    <View className="w-full mb-[5px]">
+    <View className={`w-full ${className}`}>
       <View className="relative w-full">
         <View
           className="w-full pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px]"
@@ -41,7 +52,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         </View>
 
         <TouchableOpacity
-          onPress={() => setIsVisible(!isVisible)}
+          onPress={onToggleVisibility}
           activeOpacity={1}
           className="absolute right-5 pr-2 top-1/2 -translate-y-1/2"
         >
