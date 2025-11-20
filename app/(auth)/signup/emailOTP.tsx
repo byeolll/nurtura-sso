@@ -1,4 +1,3 @@
-
 import { OTPInput } from "@/components/auth/OTPInput";
 import { ResendCode } from "@/components/auth/resendCode";
 import { PrimaryButton } from "@/components/shared/primaryButton";

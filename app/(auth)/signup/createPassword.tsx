@@ -1,5 +1,3 @@
-// createPassword.tsx (refactored)
- 
 import { PasswordInput } from "@/components/auth/passwordInput";
 import { PrimaryButton } from "@/components/shared/primaryButton";
 import { useCreatePassword } from "@/hooks/auth/useCreatePassword";
