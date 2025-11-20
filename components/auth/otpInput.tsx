@@ -1,9 +1,9 @@
 import React from "react";
 import {
-    NativeSyntheticEvent,
-    TextInput,
-    TextInputKeyPressEventData,
-    View,
+  NativeSyntheticEvent,
+  TextInput,
+  TextInputKeyPressEventData,
+  View,
 } from "react-native";
 
 interface OTPInputProps {

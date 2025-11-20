@@ -1,8 +1,8 @@
-import { OTPInput } from "@/components/auth/OTPInput";
 import { ResendCode } from "@/components/auth/resendCode";
 import { PrimaryButton } from "@/components/shared/primaryButton";
 import { useEmailOTP } from "@/hooks/auth/useEmailOTP";
 import { Text, View } from "react-native";
+import { OTPInput } from "../../../components/auth/OTPInput";
 import "../../globals.css";
 
 const EmailOTP = () => {
