@@ -51,6 +51,7 @@ export default function LoginScreen() {
           isVisible={isPasswordVisible}
           onToggleVisibility={togglePasswordVisibility}
           hasError={isLoginInvalid}
+          type="login"
         />
 
         {isLoginInvalid && (
