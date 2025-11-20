@@ -28,19 +28,26 @@ const CreateUserInfo = () => {
   } = useCreateUserInfo();
 
   return (
-    <View className="flex-1 bg-white px-4">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="mt-8">
-          <Text className="text-black font-bold text-[24px] mb-4">
-            Let us know you!
-          </Text>
+    <View className="flex-1 bg-white">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 34 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text className="text-black font-bold text-[24px] mb-3 pl-2">
+          Let us know you!
+        </Text>
 
-          {fromGoogle === "true" && (
-            <Text className="text-center text-primary mb-4">
-              Welcome! We've pre-filled your info from Google — please enter the
-              missing fields to complete your registration.
-            </Text>
-          )}
+        <Text className="text-[13px] text-gray-700 mb-6 pl-2 leading-normal">
+          {fromGoogle === "true"
+            ? "We've pre-filled your info from Google. Please complete the missing fields."
+            : "Fill in your information to complete your registration."}
+        </Text>
+ 
+        <View className="mb-2">
+          <Text className="text-gray-700 text-[13px] font-semibold tracking-wide mb-3 pl-2">
+            Personal Information
+          </Text>
 
           <TextInputField
             label="First Name"
@@ -54,54 +61,66 @@ const CreateUserInfo = () => {
             onChangeText={handleMiddleNameChange}
           />
 
-          <View className="w-full gap-5 flex-row justify-between">
-            <TextInputField
-              label="Last Name"
-              value={lastName}
-              onChangeText={handleLastNameChange}
-              width="w-[60%]"
-            />
-            <TextInputField
-              label="Suffix (optional)"
-              value={suffix}
-              onChangeText={handleSuffixChange}
-              width="w-[35%]"
-            />
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <TextInputField
+                label="Last Name"
+                value={lastName}
+                onChangeText={handleLastNameChange}
+              />
+            </View>
+            <View className="w-[100px]">
+              <TextInputField
+                label="Suffix"
+                value={suffix}
+                onChangeText={handleSuffixChange}
+              />
+            </View>
+          </View>
+        </View>
+ 
+        <View className="mb-6">
+          <Text className="text-gray-500 text-[11px] font-semibold uppercase tracking-wide mb-3 pl-2">
+            Address
+          </Text>
+
+          <View className="flex-row gap-3 mb-1">
+            <View className="w-[100px]">
+              <TextInputField
+                label="Block/No."
+                value={block}
+                onChangeText={handleBlockChange}
+              />
+            </View>
+            <View className="flex-1">
+              <TextInputField
+                label="Street"
+                value={street}
+                onChangeText={handleStreetChange}
+              />
+            </View>
           </View>
 
-          <View className="w-full gap-5 flex-row justify-between">
-            <TextInputField
-              label="Block/House No."
-              value={block}
-              onChangeText={handleBlockChange}
-              width="w-[50%]"
-            />
-            <TextInputField
-              label="Street"
-              value={street}
-              onChangeText={handleStreetChange}
-              width="w-[45%]"
-            />
-          </View>
-
-          <View className="w-full gap-5 flex-row justify-between">
-            <TextInputField
-              label="Barangay"
-              value={barangay}
-              onChangeText={handleBarangayChange}
-              width="w-[50%]"
-            />
-            <TextInputField
-              label="City"
-              value={city}
-              onChangeText={handleCityChange}
-              width="w-[45%]"
-            />
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <TextInputField
+                label="Barangay"
+                value={barangay}
+                onChangeText={handleBarangayChange}
+              />
+            </View>
+            <View className="flex-1">
+              <TextInputField
+                label="City"
+                value={city}
+                onChangeText={handleCityChange}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
 
-      <View className="pb-6">
+      <View className="px-4 pb-8 pt-4 bg-white border-t border-gray-100">
         <PrimaryButton
           onPress={handleSubmitUserInfo}
           loading={loading}
