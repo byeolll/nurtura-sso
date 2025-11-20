@@ -5,19 +5,21 @@ import {
   createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
   GoogleAuthProvider,
+  onAuthStateChanged,
   signInWithCredential,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  User
 } from 'firebase/auth';
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface UserInfo {
-  uid: string;
-  email: string | null;
+  uid: User['uid'] | null ;
+  email: User['email'] | null;
   firstName: string | null;
   lastName: string | null;
   token: string | null;
-  //birthday?: string | null; 
 }
 
 interface AuthContextType {
@@ -30,6 +32,7 @@ interface AuthContextType {
   googleSignIn: () => Promise<{ userData: any }>;
   googleSignUp: () => Promise<{ userData: any }>;
   logout: () => Promise<void>;
+  googleSignInAndVerify: (localIp: string, port: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -40,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState<string | null>("");
+  const [googleLoggedIn, setGoogleLoggedIn] = useState(true);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -50,26 +54,107 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-//   useEffect(() => {
-//    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-//     if (firebaseUser) {
-//       const firebaseToken = await firebaseUser.getIdToken();
-//       setUser({
-//         uid: firebaseUser.uid,
-//         email: firebaseUser.email,
-//         firstName: firebaseUser.displayName?.split(" ")[0] || null,
-//         lastName: firebaseUser.displayName?.split(" ")[1] || null,
-//         token: firebaseToken,
-//       });
-//     } else {
-//       setUser(null);
-//     }
+  if (googleLoggedIn) {
+    
+  }
 
-//     setLoading(false);
-//   });
+useEffect(() => {
+  if (googleLoggedIn) {
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const firebaseToken = await firebaseUser.getIdToken();
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          firstName: firebaseUser.displayName?.split(" ")[0] || null,
+          lastName: firebaseUser.displayName?.split(" ")[1] || null,
+          token: firebaseToken,
+        });
+      } else {
+        setUser(null);
+      }
 
-//   return unsubscribe;
-// }, []);
+      setLoading(false);
+    });
+
+  return unsubscribe;
+  }
+}, []);
+
+  const googleSignInAndVerify = async (localIp: string, port: string) => {
+    try {
+        // Get Google info without touching Firebase
+        await GoogleSignin.hasPlayServices();
+        const result = await GoogleSignin.signIn();
+        const googleEmail = result.data?.user?.email;
+
+        if (!googleEmail) {
+            throw new Error("No email found from Google account.");
+        }
+
+        const response = await fetch(`http://${localIp}:${port}/users/SSO-isNewUser`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: googleEmail }),
+        });
+
+        const apiResult = await response.json();
+
+        // Check if user doesn't exist in database
+        if (response.status === 404 || apiResult.isNewUser) {
+            await GoogleSignin.signOut(); 
+            throw new Error(response.status === 404 ?
+                "Account not found. Please sign up." : 
+                "This account is not registered. Please use Sign Up instead."
+            );
+        }
+
+        // Check if user registered with Google
+        const providers = apiResult.providers || [];
+        const hasGoogleProvider = providers.includes('google.com');
+        
+        console.log("Providers for this email:", providers);
+        
+        if (!hasGoogleProvider) {
+            await GoogleSignin.signOut();
+            throw new Error(
+                "This email is registered with a password. Please sign in using email and password instead."
+            );
+        }
+
+        // If everything is good, proceed with Firebase sign-in
+        const idToken = result.data?.idToken;
+        if (!idToken) throw new Error('No ID token returned from Google');
+
+        const credential = GoogleAuthProvider.credential(idToken);
+        const userCredential = await signInWithCredential(auth, credential);
+
+        const firebaseUser = userCredential.user;
+        const firebaseToken = await firebaseUser.getIdToken();
+        await SecureStore.setItemAsync("firebaseToken", firebaseToken);
+
+        const googleUser = result.data?.user;
+
+        const userData: UserInfo = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          firstName: googleUser?.givenName || null,
+          lastName: googleUser?.familyName || null,
+          token: firebaseToken
+        };
+
+        setUser(userData);
+        setGoogleLoggedIn(true);
+        return true;
+
+    } catch (error: any) {
+        console.error("Verification Error:", error.message);
+        await GoogleSignin.signOut();
+        setUser(null);
+        setGoogleLoggedIn(false);
+        return false;
+    }
+  };
 
 
   const fetchSignInMethods = async (email: string) => {
@@ -185,6 +270,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading,
         email,
         fetchSignInMethods,
+        googleSignInAndVerify,
         signUp,
         signIn,
         googleSignIn,

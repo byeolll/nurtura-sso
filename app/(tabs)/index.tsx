@@ -15,7 +15,6 @@ export default function NurturaWelcome() {
     const currentUser = auth.currentUser;
 
     if (!currentUser?.email) {
-      Alert.alert("Error", "No email found for current user.");
       setLoading(false);
       return;
     }

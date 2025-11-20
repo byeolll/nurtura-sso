@@ -281,13 +281,6 @@ const CreateAccount = () => {
         return Alert.alert("Error", "Account not found. Please sign up.");
       }
 
-      if (!result.isNewUser) {
-        return Alert.alert(
-          "Error",
-          "This account is already registered. Please Log In instead."
-        );
-      }
-
       if (result.isNewUser) {
         const dataToSave = {
           email: userData.email ?? "",
@@ -303,7 +296,7 @@ const CreateAccount = () => {
         await SecureStore.setItemAsync("fromGoogle", "true");
 
         console.log("Google Sign-Up successful");
-        router.replace("/(auth)/signup/createUserInfo");
+        router.push("/(auth)/signup/createUserInfo");
       }
     } catch (error: any) {
       console.error("Google Sign-Up Error:", error);

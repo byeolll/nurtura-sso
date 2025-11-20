@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { GoogleSignin, GoogleSigninButton } from "@react-native-google-signin/google-signin";
 import { router, useNavigation } from "expo-router";
 import { useState } from "react";
 import {
@@ -22,7 +22,7 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState("");
 
 
-  const { signIn, googleSignIn, logout } = useAuth();
+  const { signIn, googleSignIn, logout, googleSignInAndVerify } = useAuth();
   const navigation = useNavigation();
 
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -88,37 +88,22 @@ export default function LoginScreen() {
   };
 
   const handleGooglePress = async () => {
+    setIsLoginInvalid(false);
     setLoading(true);
+    
     try {
-      const { userData } = await googleSignIn();
+      if (!LOCAL_IP || !PORT) {
+        Alert.alert("Error", "Configuration error. Please contact support.");
+        return; 
+      }
+      const success = await googleSignInAndVerify(LOCAL_IP, PORT);
 
-      if (!userData?.email) {
-      Alert.alert("Error", "No email found from Google account.");
-      return;
-    }
-
-      const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/SSO-isNewUser`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userData.email }),
-      });
-
-      const result = await response.json();
-
-      if (response.status === 404) {
-        await logout();
-        return Alert.alert("Error", "Account not found. Please sign up.");
-      } 
-
-      if (result.isNewUser) {
-        await GoogleSignin.signOut();
-        return Alert.alert("Error", "This account is not registered. Please use Sign Up instead.");
+      if (success) {
+        router.replace("/(tabs)/profile");
+      } else {
+        Alert.alert("Google Sign-In Failed", "No account found. Please try again.");
       }
 
-      router.replace({
-        pathname: "/(tabs)/profile",
-        params: { email: userData.email }
-      });
 
     } catch (error) {
       console.error("Google Sign-In Error:", error);
@@ -126,14 +111,6 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
-    // try {
-    //   await googleSignIn();
-    //   router.replace("/(tabs)/profile");
-    // } catch (error: any) {
-    //   Alert.alert("Account Required", error.message);
-    // } finally {
-    //   setLoading(false); // always stop spinner
-    // }
   };
 
   const handleForgotPassword = () => {

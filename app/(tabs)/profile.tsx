@@ -69,6 +69,7 @@ export default function ProfileScreen() {
         });
 
         const data = await response.json();
+        console.log("Fetch response data:", data);
 
         if (!response.ok) {
           console.log("Backend error:", data);
