@@ -6,6 +6,7 @@ interface PasswordInputProps {
   isVisible: boolean;
   onToggleVisibility: () => void;
   hasError?: boolean;
+  label?: string;
 }
 
 export const PasswordInput = ({
@@ -14,16 +15,21 @@ export const PasswordInput = ({
   isVisible,
   onToggleVisibility,
   hasError,
+  label = "Password",
 }: PasswordInputProps) => {
+  const getBorderColor = () => {
+    if (value.length === 0) return "border-[#919191]";
+    if (hasError) return "border-[#E65656]";
+    return "border-[#4CAF50]";
+  };
+
   return (
-    <View className="relative w-full mb-[5px]">
+    <View className="relative w-full">
       <View
-        className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[10px] ${
-          hasError ? "border-[#E65656]" : "border-[#919191]"
-        }`}
+        className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[6px] ${getBorderColor()}`}
       >
         <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
-          Password
+          {label}
         </Text>
         <TextInput
           className="text-black text-[16px] pr-10"
