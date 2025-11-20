@@ -37,7 +37,7 @@ export default function LoginScreen() {
         resizeMode="contain"
       />
 
-      <View className="w-full mb-4 flex-1 justify-start">
+      <View className="w-full mb-4 flex-1 justify-start gap-1">
         <EmailInput
           value={email}
           onChangeText={handleEmailChange}
@@ -60,7 +60,7 @@ export default function LoginScreen() {
           </Text>
         )}
 
-        <Text className="ml-2">
+        <Text className="ml-2 mt-2">
           Forgot password?{" "}
           <Text
             className="text-primary underline font-bold"
