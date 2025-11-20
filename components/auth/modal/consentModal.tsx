@@ -1,5 +1,3 @@
-// components/ConsentModal.tsx
-
 import { useRef } from "react";
 import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 

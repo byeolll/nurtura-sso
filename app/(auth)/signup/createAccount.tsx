@@ -1,5 +1,3 @@
-// createAccount.tsx (refactored)
- 
 import { EmailInput } from "@/components/auth/emailInput";
 import { GoogleSignInButton } from "@/components/auth/googleSignInButton";
 import { ConsentModal } from "@/components/auth/modal/consentModal";
