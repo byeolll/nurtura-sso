@@ -13,11 +13,15 @@ export const PrimaryButton = ({
   disabled,
   title,
 }: PrimaryButtonProps) => {
+  const isDisabled = loading || disabled;
+  
   return (
     <TouchableOpacity
-      className="w-full p-6 rounded-[12px] mt-2 flex items-center bg-primary"
+      className={`w-full p-6 rounded-[12px] mt-2 flex items-center ${
+        isDisabled ? "bg-[#919191]" : "bg-primary"
+      }`}
       onPress={onPress}
-      disabled={loading || disabled}
+      disabled={isDisabled}
     >
       {loading ? (
         <ActivityIndicator color="white" />
