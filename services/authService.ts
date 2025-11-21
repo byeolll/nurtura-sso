@@ -1,9 +1,11 @@
 import {
-    SendOTPRequest,
-    SendOTPResponse,
-    SSOUserCheckResponse,
-    VerifyOTPRequest,
-    VerifyOTPResponse,
+  RegisterUserRequest,
+  RegisterUserResponse,
+  SendOTPRequest,
+  SendOTPResponse,
+  SSOUserCheckResponse,
+  VerifyOTPRequest,
+  VerifyOTPResponse,
 } from "@/types/interface";
 
 export class AuthService {
@@ -120,5 +122,38 @@ export class AuthService {
       code: otp,
       time: expiryTime,
     });
+  }
+
+  // for createUserInfo
+  async registerUser(data: RegisterUserRequest): Promise<RegisterUserResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/users/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.token}`,
+        },
+        body: JSON.stringify(data.userDetails),
+      });
+
+      const result = await response.json();
+
+      if (response.status === 401) {
+        throw new Error(result.message || "Unauthorized");
+      }
+
+      if (!response.ok) {
+        throw new Error(result.message || "Registration failed");
+      }
+
+      return {
+        success: true,
+        email: result.email,
+        message: result.message || "User registered successfully",
+      };
+    } catch (error: any) {
+      console.error("Error registering user:", error);
+      throw new Error(error.message || "Failed to register user");
+    }
   }
 }
