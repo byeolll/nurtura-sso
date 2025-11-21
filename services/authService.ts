@@ -1,31 +1,19 @@
-export interface EmailCheckResponse {
-  exists: boolean;
-}
-
-export interface SendOTPRequest {
-  email: string;
-  code: number;
-  time: string;
-}
-
-export interface SendOTPResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface SSOUserCheckResponse {
-  isNewUser: boolean;
-}
+import {
+    SendOTPRequest,
+    SendOTPResponse,
+    SSOUserCheckResponse,
+    VerifyOTPRequest,
+    VerifyOTPResponse,
+} from "@/types/interface";
 
 export class AuthService {
-
-  // for createAccount
   private baseUrl: string;
 
   constructor(localIP: string, port: string) {
     this.baseUrl = `http://${localIP}:${port}`;
   }
 
+  // for createAccount
   async checkEmailExists(email: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/users/check-email`, {
@@ -95,6 +83,42 @@ export class AuthService {
     return expireTime.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
+    });
+  }
+
+  // for emailOTP
+  async verifyOTP(data: VerifyOTPRequest): Promise<VerifyOTPResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/email-service/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Invalid OTP");
+      }
+
+      return {
+        success: true,
+        message: result.message || "OTP verified successfully",
+      };
+    } catch (error: any) {
+      console.error("Error verifying OTP:", error);
+      throw new Error(error.message || "Failed to verify OTP");
+    }
+  }
+
+  async resendOTP(email: string): Promise<SendOTPResponse> {
+    const otp = this.generateOTP();
+    const expiryTime = this.getOTPExpiryTime();
+
+    return this.sendOTP({
+      email,
+      code: otp,
+      time: expiryTime,
     });
   }
 }

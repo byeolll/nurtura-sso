@@ -21,3 +21,35 @@ export interface UseFetchResult<T> {
     loading: boolean,
     refetch: (overrideOptions?: UseFetchOptions) => Promise<void>
 }
+
+// for createAccount
+export interface EmailCheckResponse {
+  exists: boolean;
+}
+
+export interface SendOTPRequest {
+  email: string;
+  code: number;
+  time: string;
+}
+
+export interface SendOTPResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface SSOUserCheckResponse {
+  isNewUser: boolean;
+}
+
+// for emailOTP
+export interface VerifyOTPRequest {
+  email: string;
+  code: string;
+  purpose: string;
+}
+
+export interface VerifyOTPResponse {
+  success: boolean;
+  message: string;
+}
