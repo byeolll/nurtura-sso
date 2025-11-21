@@ -11,9 +11,16 @@ export const GoogleSignInButton = ({
 }: GoogleSignInButtonProps) => {
   return (
     <TouchableOpacity
-      className={`flex-row items-center justify-center p-6 rounded-[12px] w-[100%]   ${
-        disabled ? "opacity-50 bg-gray-200" : "opacity-100 shadow bg-white"
-      }`} 
+      className={`flex-row items-center justify-center p-6 rounded-[12px] w-[100%] bg-white shadow-sm-subtle ${
+        disabled ? "opacity-50" : "opacity-100"
+      }`}
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+      }}
       onPress={onPress}
       disabled={disabled}
     >
