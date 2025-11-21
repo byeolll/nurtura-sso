@@ -211,7 +211,7 @@ export const useCreateUserInfo = () => {
         console.log("createUserInfo" + email);
 
         router.replace({
-          pathname: "/(tabs)/profile",
+          pathname: "/(tabs)/(home)",
           params: { email: result.email },
         });
       } else {
