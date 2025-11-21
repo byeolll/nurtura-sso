@@ -2,54 +2,44 @@ import { useAuth } from "@/contexts/AuthContext";
 import { auth } from '@/firebase';
 import React, { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
+import useFetch from "@/hooks/useFetch";
+import { UserInfo } from "@/types/interface";
 
 const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
 const PORT = process.env.EXPO_PUBLIC_PORT;
 
+interface FetchUserResponse {
+  userInfo: UserInfo;
+}
+
 export default function NurturaWelcome() {
-  const { user } = useAuth();
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const currentUser = auth.currentUser;
+  const emailToSend = currentUser?.email?.trim().toLowerCase() || "";
+
+  const { data, error, loading, refetch } = useFetch<FetchUserResponse>(
+    `http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`,
+    {
+      method: 'POST',
+      body: { email: emailToSend },
+      autoFetch: !!emailToSend,
+    }
+  );
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-
-    if (!currentUser?.email) {
-      setLoading(false);
-      return;
+    if (error) {
+      console.error("Fetch user info failed:", error);
+      Alert.alert("Error", "Unable to fetch profile data.");
     }
+  }, [error]);
 
-    const emailToSend = currentUser.email.trim().toLowerCase();
-    console.log("📤 Sending email to backend:", emailToSend);
+  useEffect(() => {
+    if (data) {
+      console.log("User info fetched:", data.userInfo);
+    }
+  }, [data]);
 
-    const fetchUserInfo = async () => {
-      try {
-        const response = await fetch(`http://${LOCAL_IP}:${PORT}/users/fetch-userinfo`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: emailToSend }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.log("Backend error:", data);
-          Alert.alert("Error", data.message || "Failed to fetch user info");
-          return;
-        }
-
-        console.log("User info received:", data.userInfo);
-        setUserInfo(data.userInfo);
-      } catch (error) {
-        console.error("Network error:", error);
-        Alert.alert("Network Error", "Unable to fetch user info. Check connection.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserInfo();
-  }, []);
+  const userInfo = data?.userInfo;
+  
 
   const fullName = `${userInfo?.first_name || "—"} ${userInfo?.last_name || ""}`;
   // const age = userInfo?.birthdate
