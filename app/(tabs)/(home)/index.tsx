@@ -1,9 +1,10 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { auth } from '@/firebase';
 import React, { useEffect, useState } from "react";
-import { Alert, Image, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useFetch from "@/hooks/useFetch";
 import { UserInfo } from "@/types/interface";
+import { router } from "expo-router";
 
 const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
 const PORT = process.env.EXPO_PUBLIC_PORT;
@@ -13,6 +14,7 @@ interface FetchUserResponse {
 }
 
 export default function NurturaWelcome() {
+  const { logout } = useAuth();
   const currentUser = auth.currentUser;
   const emailToSend = currentUser?.email?.trim().toLowerCase() || "";
 
@@ -46,6 +48,28 @@ export default function NurturaWelcome() {
   //   ? Math.floor((new Date().getTime() - new Date(userInfo.birthdate).getTime()) / (1000 * 60 * 60 * 24 * 365))
   //   : "—";
 
+  const handleLogout = async () => {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await logout();
+                router.replace('/(auth)/login');
+              } catch (error: any) {
+                Alert.alert('Error', error.message);
+              }
+            },
+          },
+        ]
+      );
+    };
+
   return (
     <View style={styles.container}>
       
@@ -55,14 +79,14 @@ export default function NurturaWelcome() {
           <Text style={styles.username}>{fullName}</Text>
         </View>
 
-        <Image
+        {/* <Image
           source={require("@/assets/images/google.png")}
           style={styles.avatarPlaceholder}
           resizeMode="cover"
-        />
+        /> */}
       </View>
 
-      <View style={styles.centerSection}>
+      {/* <View style={styles.centerSection}>
         <Image
           source={require("@/assets/images/nurturaRack.png")}
           style={styles.plantImage}
@@ -74,25 +98,66 @@ export default function NurturaWelcome() {
             <Text style={styles.placeholder}>{userInfo?.first_name || "—"}</Text>, doesn't have a Nurtura Rack
           </Text>
         </View>
-      </View>
+      </View> */}
 
-      <View style={styles.bottomSection}>
-        <View style={styles.infoBlock}>
-          {/* <Text style={styles.boldText}>
-            Are you really <Text style={styles.placeholder}>{age}</Text> years old?
-          </Text> */}
-          {/* <Text style={styles.boldText}>
-            Check if <Text style={styles.placeholder}>{userInfo?.formattedBirthdate || "—"}</Text> is your
-            real birthday.
-          </Text> */}
-        </View>
-
-        <View style={styles.infoBlock}>
-          <Text style={styles.boldText}>Is this really yours?</Text>
-          <Text style={styles.subText}>
-            Is <Text style={styles.placeholder}>{userInfo?.email || "—"}</Text> your email?
+      <View className="flex-1 bg-white px-6 justify-center">
+        <View className="bg-gray-100 rounded-lg p-6 mb-6">
+          <Text className="text-lg font-semibold text-gray-800 mb-2">
+            Logged in as:
           </Text>
+          <Text className="text-base text-gray-600">{auth.currentUser?.email}</Text>
         </View>
+
+        {userInfo ? (
+            <>
+              <Text className="text-base text-gray-700">
+                <Text className="font-semibold">First Name: </Text>{userInfo.first_name || '—'}
+              </Text>
+              <Text className="text-base text-gray-700">
+                <Text className="font-semibold">Midlle Name: </Text>{userInfo.middle_name || '—'}
+              </Text>
+              <Text className="text-base text-gray-700">
+                <Text className="font-semibold">Last Name: </Text>{userInfo.last_name || '—'}
+              </Text>
+              <Text className="text-base text-gray-700">
+                <Text className="font-semibold">Suffix: </Text>{userInfo.suffix || '—'}
+              </Text>
+              <Text className="text-base text-gray-700">
+                <Text className="font-semibold">Address: </Text>{userInfo.address || '—'}
+              </Text>
+            </>
+          ) : (
+            <Text className="text-gray-500">No additional info found.</Text>
+          )}
+
+        {error && (
+          <TouchableOpacity
+            className="bg-blue-500 rounded-lg py-3 mb-4 active:bg-blue-600"
+            onPress={() => refetch()}
+          >
+            <Text className="text-white text-center font-semibold">
+              Retry Fetch
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          className="bg-red-500 rounded-lg py-4 active:bg-red-600"
+          onPress={handleLogout}
+        >
+          <Text className="text-white text-center font-semibold text-lg">
+            Logout
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="bg-gray-500 rounded-lg py-4 active:bg-gray-600 mt-10"
+          onPress={() => router.push('/(tabs)/(home)/notification')}
+        >
+          <Text className="text-white text-center font-semibold text-lg">
+            Notification Test Routing
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

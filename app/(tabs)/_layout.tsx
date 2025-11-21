@@ -1,21 +1,31 @@
-import { Tabs, useLocalSearchParams } from 'expo-router';
+import { Tabs } from 'expo-router';
 import '../globals.css';
 
 const _layout = () => {
-  const { email } = useLocalSearchParams(); // ✅ Get the param from the route
 
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{ title: 'Home' }}
-        initialParams={{ email }} // ✅ Pass email to screen
       />
       <Tabs.Screen
-        name="profile"
-        options={{ title: 'Profile' }}
-        initialParams={{ email }} // ✅ Pass email to screen
+        name="racks"
+        options={{ title: 'Racks' }}
       />
+      <Tabs.Screen
+        name="addNew"
+        options={{ title: 'Add New' }}
+      />
+      <Tabs.Screen
+        name="activity"
+        options={{ title: 'Activity' }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{ title: 'Account' }}
+      />
+
     </Tabs>
   )
 }

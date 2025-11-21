@@ -54,7 +54,7 @@ export const useLogin = () => {
 
     try {
       await signIn(email, password);
-      router.replace("/(tabs)/profile");
+      router.replace("/(tabs)/(home)");
     } catch (error: any) {
       setIsLoginInvalid(true);
       Alert.alert("Invalid Login", "No account found. Please try again.");
@@ -76,7 +76,7 @@ export const useLogin = () => {
       const success = await googleSignInAndVerify(LOCAL_IP, PORT);
 
       if (success) {
-        router.replace("/(tabs)/profile");
+        router.replace("/(tabs)/(home)");
       } else {
         Alert.alert(
           "Google Sign-In Failed",

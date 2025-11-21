@@ -43,7 +43,7 @@ function RootLayoutNav() {
       router.replace('/(auth)/login');
     } 
     else if (user && inAuthGroup && !isSigningUp) { 
-      router.replace('/(tabs)/profile'); 
+      router.replace('/(tabs)'); 
     }
     
   }, [user, isReady, isSigningUp, router, segments]);
