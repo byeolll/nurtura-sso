@@ -35,11 +35,11 @@ export const PasswordInput = ({
       <View
         className={`w-[100%] pt-2 px-3 border-[2px] rounded-[12px] bg-white mb-[6px] ${getBorderColor()}`}
       >
-        <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+        <Text className="text-primary text-base pt-[4px] pl-[4px]">
           {label}
         </Text>
         <TextInput
-          className="text-black text-[16px] pr-10"
+          className="text-black text-xl pr-10"
           secureTextEntry={!isVisible}
           keyboardType="default"
           autoCapitalize="none"

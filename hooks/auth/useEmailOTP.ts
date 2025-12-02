@@ -1,12 +1,15 @@
+import { AuthService } from "@/services/authService";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    NativeSyntheticEvent,
-    TextInput,
-    TextInputKeyPressEventData,
+  Alert,
+  NativeSyntheticEvent,
+  TextInput,
+  TextInputKeyPressEventData,
 } from "react-native";
+
+const RESEND_COOLDOWN = 30;
 
 export const useEmailOTP = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -18,16 +21,17 @@ export const useEmailOTP = () => {
   const [isOtpInvalid, setIsOtpInvalid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(0);
-
+ 
+  const authService = LOCAL_IP && PORT ? new AuthService(LOCAL_IP, PORT) : null;
+ 
   useEffect(() => {
     const loadEmail = async () => {
       const email = await SecureStore.getItemAsync("signup_email");
       setSavedEmail(email);
     };
-
     loadEmail();
   }, []);
-
+ 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (timer > 0) {
@@ -41,23 +45,19 @@ export const useEmailOTP = () => {
     };
   }, [timer]);
 
-  const handleChange = (text: string, index: number) => {
-    if (/^\d*$/.test(text)) {
-      const newOtp = [...otp];
-      newOtp[index] = text;
-      setOtp(newOtp);
+  const handleChange = (text: string, index: number) => { 
+    if (!/^\d*$/.test(text)) return;
 
-      if (isOtpInvalid) {
-        setIsOtpInvalid(false);
-      }
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+ 
+    if (isOtpInvalid) {
+      setIsOtpInvalid(false);
+    }
 
-      if (newOtp.every((v) => v === "")) {
-        setIsOtpInvalid(false);
-      }
-
-      if (text && index < 4) {
-        inputs.current[index + 1]?.focus();
-      }
+    if (text && index < 4) {
+      inputs.current[index + 1]?.focus();
     }
   };
 
@@ -83,82 +83,49 @@ export const useEmailOTP = () => {
   };
 
   const handleNextPress = async () => {
-    const code = otp.join("");
+    if (!authService || !savedEmail) {
+      Alert.alert("Error", "Configuration error. Please try again.");
+      return;
+    }
 
+    const code = otp.join("");
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `http://${LOCAL_IP}:${PORT}/email-service/verify-otp`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: savedEmail,
-            code,
-            purpose: "registration",
-          }),
-        }
-      );
+      await authService.verifyOTP({
+        email: savedEmail,
+        code,
+        purpose: "registration",
+      });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        console.log("OTP Verified");
-        await SecureStore.setItemAsync("verified_email", savedEmail as string);
-        router.replace("/(auth)/signup/createPassword");
-      } else {
-        console.error("Error verifying OTP:", result.message);
-        setIsOtpInvalid(true);
-      }
-    } catch (error) {
+      console.log("OTP Verified");
+      await SecureStore.setItemAsync("verified_email", savedEmail);
+      router.replace("/(auth)/signup/createPassword");
+    } catch (error: any) {
       console.error("Error verifying OTP:", error);
-      Alert.alert("Error", "Unable to verify OTP. Please try again.");
+      setIsOtpInvalid(true);
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendPress = async () => {
-    if (timer === 0) {
-      console.log("Resend clicked");
-      setTimer(30);
+    if (timer > 0) return;
+    if (!authService || !savedEmail) {
+      Alert.alert("Error", "Configuration error. Please try again.");
+      return;
+    }
 
-      try {
-        const otp = Math.floor(10000 + Math.random() * 90000);
-        const currentTime = new Date();
-        const expireTime = new Date(currentTime.getTime() + 15 * 60000);
-        const formattedTime = expireTime.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+    console.log("Resend clicked");
+    setTimer(RESEND_COOLDOWN);
 
-        const response = await fetch(
-          `http://${LOCAL_IP}:${PORT}/email-service/send-otp`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: savedEmail,
-              code: otp,
-              time: formattedTime,
-            }),
-          }
-        );
-
-        const result = await response.json();
-
-        if (response.ok) {
-          Alert.alert("Success", "OTP has been resent to your email.");
-          console.log("OTP resent", result);
-        } else {
-          Alert.alert("Error", result.message || "Failed to resend OTP.");
-          console.error(result.error);
-        }
-      } catch (error) {
-        console.error("Error sending OTP:", error);
-        Alert.alert("Error", "Unable to send OTP. Please try again later.");
-      }
+    try {
+      await authService.resendOTP(savedEmail);
+      Alert.alert("Success", "OTP has been resent to your email.");
+    } catch (error: any) {
+      console.error("Error resending OTP:", error);
+      Alert.alert("Error", error.message || "Failed to resend OTP.");
+      setTimer(0);
     }
   };
 

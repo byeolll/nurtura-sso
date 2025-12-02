@@ -1,5 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { cleanInput, validateEmail as validateEmailUtil } from "@/utils/validation";
+import { AuthService } from "@/services/authService";
+import {
+  cleanInput,
+  validateEmail as validateEmailUtil,
+} from "@/utils/validation";
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -8,6 +12,17 @@ import { Alert, BackHandler } from "react-native";
 
 export const USER_INFO_STORAGE_KEY = "temp_user_info";
 export const SSO_INFO_STORAGE_KEY = "sso_temp_user_info";
+
+const STORAGE_KEYS = [
+  USER_INFO_STORAGE_KEY,
+  SSO_INFO_STORAGE_KEY,
+  "signup_email",
+  "verified_email",
+  "signup_password",
+  "signup_confirm_password",
+  "fromGoogle",
+  "firebaseToken",
+];
 
 export const useCreateAccount = () => {
   const LOCAL_IP = process.env.EXPO_PUBLIC_LOCAL_IP_ADDRESS;
@@ -20,31 +35,31 @@ export const useCreateAccount = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [isFirstMount, setIsFirstMount] = useState(true);
-
   const [showConsentModal, setShowConsentModal] = useState(false);
-  const [currentConsentType, setCurrentConsentType] = useState<"TS" | "PP" | null>(null);
+  const [currentConsentType, setCurrentConsentType] = useState<
+    "TS" | "PP" | null
+  >(null);
   const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
 
   const { googleSignUp } = useAuth();
 
+  // Initialize auth service
+  const authService = LOCAL_IP && PORT ? new AuthService(LOCAL_IP, PORT) : null;
+
+  // Clear storage on first mount
   useEffect(() => {
     const clearStorageOnFirstEntry = async () => {
       if (isFirstMount) {
-        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-        await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
-        await SecureStore.deleteItemAsync("signup_email");
-        await SecureStore.deleteItemAsync("verified_email");
-        await SecureStore.deleteItemAsync("signup_password");
-        await SecureStore.deleteItemAsync("signup_confirm_password");
-        await SecureStore.deleteItemAsync("fromGoogle");
-        await SecureStore.deleteItemAsync("firebaseToken");
+        await Promise.all(
+          STORAGE_KEYS.map((key) => SecureStore.deleteItemAsync(key))
+        );
         setIsFirstMount(false);
       }
     };
-
     clearStorageOnFirstEntry();
   }, []);
 
+  // Load saved email after first mount
   useEffect(() => {
     const loadSavedEmail = async () => {
       if (!isFirstMount) {
@@ -58,22 +73,19 @@ export const useCreateAccount = () => {
     loadSavedEmail();
   }, [isFirstMount]);
 
+  // Handle back button
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        Alert.alert("Go back?", "Your process will be deleted and cleared.", [
+        Alert.alert("Go back?", "Your progress will be deleted and cleared.", [
           { text: "Cancel", style: "cancel" },
           {
             text: "Yes",
             style: "destructive",
             onPress: async () => {
-              await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-              await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
-              await SecureStore.deleteItemAsync("signup_password");
-              await SecureStore.deleteItemAsync("signup_confirm_password");
-              await SecureStore.deleteItemAsync("verified_email");
-              await SecureStore.deleteItemAsync("signup_email");
-              await SecureStore.deleteItemAsync("fromGoogle");
+              await Promise.all(
+                STORAGE_KEYS.map((key) => SecureStore.deleteItemAsync(key))
+              );
               router.back();
             },
           },
@@ -98,27 +110,6 @@ export const useCreateAccount = () => {
     } else {
       setEmailError("");
       setIsEmailValid(true);
-    }
-  };
-
-  const isEmailAlreadyRegistered = async (email: string) => {
-    try {
-      const response = await fetch(
-        `http://${LOCAL_IP}:${PORT}/users/check-email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      if (response.status === 409) {
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      throw error;
     }
   };
 
@@ -159,112 +150,80 @@ export const useCreateAccount = () => {
   };
 
   const handleNextPress = async () => {
-    if (!isNextButtonEnabled) return;
+    if (!isNextButtonEnabled || !authService) return;
 
     setLoading(true);
 
     try {
+      // Check if email changed
       const savedEmail = await SecureStore.getItemAsync("signup_email");
       const verifiedEmail = await SecureStore.getItemAsync("verified_email");
 
       if (savedEmail && savedEmail !== email) {
-        console.log("Email changed from", savedEmail, "to", email);
-        await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-        await SecureStore.deleteItemAsync("signup_password");
-        await SecureStore.deleteItemAsync("signup_confirm_password");
-        await SecureStore.deleteItemAsync("verified_email");
-        await SecureStore.deleteItemAsync("fromGoogle");
+        console.log("Email changed, clearing related data");
+        await Promise.all([
+          SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY),
+          SecureStore.deleteItemAsync("signup_password"),
+          SecureStore.deleteItemAsync("signup_confirm_password"),
+          SecureStore.deleteItemAsync("verified_email"),
+          SecureStore.deleteItemAsync("fromGoogle"),
+        ]);
       }
 
       await SecureStore.setItemAsync("signup_email", email);
 
+      // Skip OTP if already verified
       if (verifiedEmail === email) {
         console.log("Email already verified, skipping OTP");
         router.push("/(auth)/signup/createPassword");
-        setLoading(false);
         return;
       }
 
-      try {
-        const emailTaken = await isEmailAlreadyRegistered(email);
-
-        if (emailTaken) {
-          setLoading(false);
-          return Alert.alert("Error", "Email is already registered!");
-        }
-      } catch (error) {
-        console.error("Error checking email:", error);
-        setLoading(false);
-        return Alert.alert(
-          "Error",
-          "An error occured when verifying the email."
-        );
+      // Check if email is already registered
+      const emailExists = await authService.checkEmailExists(email);
+      if (emailExists) {
+        Alert.alert("Error", "Email is already registered!");
+        return;
       }
 
-      const otp = Math.floor(10000 + Math.random() * 90000);
-      const currentTime = new Date();
-      const expireTime = new Date(currentTime.getTime() + 15 * 60000);
-      const formattedTime = expireTime.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
+      // Generate and send OTP
+      const otp = authService.generateOTP();
+      const expiryTime = authService.getOTPExpiryTime();
+
+      await authService.sendOTP({
+        email,
+        code: otp,
+        time: expiryTime,
       });
 
-      const response = await fetch(
-        `http://${LOCAL_IP}:${PORT}/email-service/send-otp`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            code: otp,
-            time: formattedTime,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        console.log("Email sent successfully:", result);
-        Alert.alert("Success", "OTP has been sent to your email.");
-        await SecureStore.setItemAsync("fromGoogle", "false");
-        router.push("/(auth)/signup/emailOTP");
-      } else {
-        console.error("Error sending OTP:", result.message);
-        Alert.alert("Error", "Failed to send OTP.");
-      }
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      Alert.alert("Error", "Unable to send OTP. Please try again later.");
+      Alert.alert("Success", "OTP has been sent to your email.");
+      await SecureStore.setItemAsync("fromGoogle", "false");
+      router.push("/(auth)/signup/emailOTP");
+    } catch (error: any) {
+      console.error("Error in handleNextPress:", error);
+      Alert.alert("Error", error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGooglePress = async () => {
-    if (!isGoogleButtonEnabled) return;
+    if (!isGoogleButtonEnabled || !authService) return;
 
     setLoading(true);
-    try {
-      await SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY);
-      await SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY);
 
+    try {
+      // Clear temp storage
+      await Promise.all([
+        SecureStore.deleteItemAsync(USER_INFO_STORAGE_KEY),
+        SecureStore.deleteItemAsync(SSO_INFO_STORAGE_KEY),
+      ]);
+
+      // Sign up with Google
       const { userData } = await googleSignUp();
 
-      const response = await fetch(
-        `http://${LOCAL_IP}:${PORT}/users/SSO-isNewUser`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userData.email }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.status === 404) {
-        return Alert.alert("Error", "Account not found. Please sign up.");
-      }
+      // Check if user is new
+      const result = await authService.checkSSONewUser(userData.email);
 
       if (result.isNewUser) {
         const dataToSave = {

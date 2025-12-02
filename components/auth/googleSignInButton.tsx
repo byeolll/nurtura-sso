@@ -11,7 +11,9 @@ export const GoogleSignInButton = ({
 }: GoogleSignInButtonProps) => {
   return (
     <TouchableOpacity
-      className="flex-row items-center justify-center p-6 rounded-[12px] w-[100%] bg-white shadow-sm-subtle"
+      className={`flex-row items-center justify-center p-6 rounded-[12px] w-[100%] bg-white shadow-sm-subtle ${
+        disabled ? "opacity-50" : "opacity-100"
+      }`}
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -27,7 +29,7 @@ export const GoogleSignInButton = ({
         className="w-5 h-5 mr-3"
         resizeMode="contain"
       />
-      <Text className="text-[16px] font-semibold text-black">
+      <Text className="text-xl font-semibold text-black">
         Continue with Google
       </Text>
     </TouchableOpacity>

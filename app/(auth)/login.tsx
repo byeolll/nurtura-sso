@@ -55,15 +55,15 @@ export default function LoginScreen() {
         />
 
         {isLoginInvalid && (
-          <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+          <Text className="text-[#E65656] text-base mb-[10px] pl-2">
             Invalid login. Please try again.
           </Text>
         )}
 
-        <Text className="ml-2 mt-2">
+        <Text className="ml-2 mt-2 text-base">
           Forgot password?{" "}
           <Text
-            className="text-primary underline font-bold"
+            className="text-primary underline font-bold text-base"
             onPress={handleForgotPassword}
           >
             Reset here.
@@ -81,9 +81,9 @@ export default function LoginScreen() {
           className="mt-4 mb-5"
           disabled={loading}
         >
-          <Text className="text-center text-gray-600">
+          <Text className="text-center text-gray-600 text-base">
             Don't have an account?{" "}
-            <Text className="text-primary font-semibold underline">
+            <Text className="text-primary font-semibold underline text-base">
               Create one here.
             </Text>
           </Text>

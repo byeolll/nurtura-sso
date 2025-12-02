@@ -35,7 +35,7 @@ const CreateAccount = () => {
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-start">
-        <Text className="text-black font-bold text-[24px] mb-[20px] pl-2">
+        <Text className="text-black font-bold text-3xl mb-[20px] pl-2">
           Create your account
         </Text>
 
@@ -58,7 +58,7 @@ const CreateAccount = () => {
           checked={isCheckedTS}
           onPress={handleCheckboxToggleTS}
           label={
-            <Text className="text-[13px] text-black leading-[20px]">
+            <Text className="text-base text-black leading-[20px]">
               I have read and agreed to all terms and conditions set with
               Nurtura's{" "}
               <TouchableOpacity
@@ -67,7 +67,7 @@ const CreateAccount = () => {
                   setShowConsentModal(true);
                 }}
               >
-                <Text className="text-[13px] font-semibold text-primary">
+                <Text className="text-base font-semibold text-primary">
                   Terms of Service
                 </Text>
               </TouchableOpacity>
@@ -81,7 +81,7 @@ const CreateAccount = () => {
             onPress={handleCheckboxTogglePP}
             label={
               <>
-                <Text className="text-[13px] text-black leading-normal">
+                <Text className="text-base text-black leading-normal">
                   I acknowledge and agree to Nurtura's{" "}
                 </Text>
                 <TouchableOpacity
@@ -90,11 +90,11 @@ const CreateAccount = () => {
                     setShowConsentModal(true);
                   }}
                 >
-                  <Text className="text-[13px] font-semibold text-primary">
+                  <Text className="text-base font-semibold text-primary">
                     Privacy Policy
                   </Text>
                 </TouchableOpacity>
-                <Text className="text-[13px] text-black leading-normal">
+                <Text className="text-base text-black leading-normal">
                   {" "}
                   regarding the collection and use of my personal data.
                 </Text>
