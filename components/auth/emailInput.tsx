@@ -24,11 +24,11 @@ export const EmailInput = ({
               : "border-[#919191]"
         }`}
       >
-        <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+        <Text className="text-primary text-base pt-[4px] pl-[4px]">
           Email
         </Text>
         <TextInput
-          className="text-black text-[16px]"
+          className="text-black text-xl"
           value={value}
           onChangeText={onChangeText}
           keyboardType="email-address"
@@ -39,7 +39,7 @@ export const EmailInput = ({
         />
       </View>
       {error && error.length > 0 && (
-        <Text className="text-[#E65656] text-[13px] mt-1 pl-2 mb-[10px]">
+        <Text className="text-[#E65656] text-base mt-1 pl-2 mb-[10px]">
           {error}
         </Text>
       )}

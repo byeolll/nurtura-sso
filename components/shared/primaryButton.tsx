@@ -26,7 +26,7 @@ export const PrimaryButton = ({
       {loading ? (
         <ActivityIndicator color="white" />
       ) : (
-        <Text className="text-white text-[16px] font-bold">{title}</Text>
+        <Text className="text-white text-xl font-bold">{title}</Text>
       )}
     </TouchableOpacity>
   );

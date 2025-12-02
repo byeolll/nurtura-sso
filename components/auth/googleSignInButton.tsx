@@ -29,7 +29,7 @@ export const GoogleSignInButton = ({
         className="w-5 h-5 mr-3"
         resizeMode="contain"
       />
-      <Text className="text-[16px] font-semibold text-black">
+      <Text className="text-xl font-semibold text-black">
         Continue with Google
       </Text>
     </TouchableOpacity>
