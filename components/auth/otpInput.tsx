@@ -40,7 +40,7 @@ export const OTPInput = ({
           onFocus={onFocus}
           keyboardType="number-pad"
           maxLength={1}
-          className={`h-[60px] w-[60px] border-[2px] rounded-[12px] text-black text-center text-[18px] font-bold ${
+          className={`h-[60px] w-[60px] border-[2px] rounded-[12px] text-black text-center text-xl font-bold ${
             isInvalid ? "border-[#E65656]" : "border-grayText"
           }`}
           returnKeyType="next"
