@@ -23,7 +23,7 @@ export default function SignupLayout() {
         }} 
       />
       <Stack.Screen 
-        name="emailOTP" 
+        name="emailOTP"   
         options={{ 
           headerTitle: () => (
             <Image source={require('@/assets/images/signupProgress2.png')} />
