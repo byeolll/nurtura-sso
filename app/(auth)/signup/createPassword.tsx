@@ -22,11 +22,11 @@ const CreatePassword = () => {
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-start">
-        <Text className="text-black font-bold text-[24px] pr-[110px] mb-[13px] pl-2">
+        <Text className="text-black font-bold text-3xl pr-[110px] mb-[13px] pl-2">
           Set your password
         </Text>
 
-        <Text className="mb-[20px] text-[13px] text-gray-700 leading-normal pl-2">
+        <Text className="mb-[20px] text-base text-gray-700 leading-normal pl-2">
           Enter a secure password to protect your account.
         </Text>
 
@@ -41,7 +41,7 @@ const CreatePassword = () => {
           />
 
           {!isPasswordValid && password.length > 0 && (
-            <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+            <Text className="text-[#E65656] text-base mb-[10px] pl-2">
               Password must have 8+ chars, uppercase, number & symbol.
             </Text>
           )}
@@ -61,7 +61,7 @@ const CreatePassword = () => {
           />
 
           {!passwordsMatch && confirmPassword.length > 0 && (
-            <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+            <Text className="text-[#E65656] text-base mb-[10px] pl-2">
               Passwords do not match.
             </Text>
           )}
@@ -69,7 +69,7 @@ const CreatePassword = () => {
           {!isConfirmPasswordValid &&
             confirmPassword.length > 0 &&
             passwordsMatch && (
-              <Text className="text-[#E65656] text-[13px] mb-[10px] pl-2">
+              <Text className="text-[#E65656] text-base mb-[10px] pl-2">
                 Password must have 8+ chars, uppercase, number & symbol.
               </Text>
             )}

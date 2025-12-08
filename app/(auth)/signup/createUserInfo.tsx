@@ -34,18 +34,18 @@ const CreateUserInfo = () => {
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 34 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-black font-bold text-[24px] mb-3 pl-2">
+        <Text className="text-black font-bold text-3xl mb-3 pl-2">
           Let us know you!
         </Text>
 
-        <Text className="text-[13px] text-gray-700 mb-6 pl-2 leading-normal">
+        <Text className="text-base text-gray-700 mb-6 pl-2 leading-normal">
           {fromGoogle === "true"
             ? "We've pre-filled your info from Google. Please complete the missing fields."
             : "Fill in your information to complete your registration."}
         </Text>
  
         <View className="mb-2">
-          <Text className="text-gray-700 text-[13px] font-semibold tracking-wide mb-3 pl-2">
+          <Text className="text-gray-700 text-base font-semibold tracking-wide mb-3 pl-2">
             Personal Information
           </Text>
 
@@ -80,7 +80,7 @@ const CreateUserInfo = () => {
         </View>
  
         <View className="mb-6">
-          <Text className="text-gray-500 text-[11px] font-semibold uppercase tracking-wide mb-3 pl-2">
+          <Text className="text-gray-500 text-base font-semibold uppercase tracking-wide mb-3 pl-2">
             Address
           </Text>
 
