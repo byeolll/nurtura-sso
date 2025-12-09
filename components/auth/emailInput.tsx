@@ -28,7 +28,7 @@ export const EmailInput = ({
           Email
         </Text>
         <TextInput
-          className="text-black text-xl"
+          className="text-black text-base"
           value={value}
           onChangeText={onChangeText}
           keyboardType="email-address"

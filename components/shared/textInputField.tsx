@@ -23,7 +23,7 @@ export const TextInputField = ({
         {label}
       </Text>
       <TextInput
-        className="text-black text-[16px]"
+        className="text-black text-base"
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
