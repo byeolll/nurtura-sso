@@ -39,7 +39,7 @@ export const PasswordInput = ({
           {label}
         </Text>
         <TextInput
-          className="text-black text-xl pr-10"
+          className="text-black text-base pr-10"
           secureTextEntry={!isVisible}
           keyboardType="default"
           autoCapitalize="none"

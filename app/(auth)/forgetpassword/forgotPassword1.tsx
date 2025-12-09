@@ -252,7 +252,7 @@ const ForgotPassword1 = () => {
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-start">
-        <Text className="text-black font-bold text-[24px] mb-[20px] pl-2">
+        <Text className="text-black font-bold text-3xl mb-[20px] pl-2">
           Find your account
         </Text>
 
@@ -261,12 +261,12 @@ const ForgotPassword1 = () => {
             emailError ? "border-[#ef8d8d]" : "border-[#919191]"
           }`}
         >
-          <Text className="text-primary text-[13px] pt-[4px] pl-[4px]">
+          <Text className="text-primary text-base pt-[4px] pl-[4px]">
             Email
           </Text>
 
           <TextInput
-            className="text-black text-[16px]"
+            className="text-black text-xl"
             keyboardType="email-address"
             autoCapitalize="none"
             onChangeText={handleEmailChange}
@@ -276,7 +276,7 @@ const ForgotPassword1 = () => {
 
         {/* 🔹 Error message */}
         {emailError.length > 0 && (
-          <Text className="text-[#E65656] text-[13px] mt-1 pl-2">
+          <Text className="text-[#E65656] text-base mt-1 pl-2">
             {emailError}
           </Text>
         )}
@@ -290,7 +290,7 @@ const ForgotPassword1 = () => {
           }`}
           disabled={!isNextButtonEnabled || loading}
         >
-          <Text className="text-white text-[16px] font-bold">
+          <Text className="text-white text-xl font-bold">
             {loading ? "Loading..." : "Next"}
           </Text>
         </TouchableOpacity>

@@ -167,11 +167,11 @@ const ForgotPassword2 = () => {
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-start">
-        <Text className="text-black font-bold text-[24px] pl-2 mb-[13px]">
+        <Text className="text-black font-bold text-3xl pl-2 mb-[13px]">
           Enter one-time code
         </Text>
 
-        <Text className="pl-2 mb-[20px] text-[13px] text-gray-700 leading-normal">
+        <Text className="pl-2 mb-[20px] text-base text-gray-700 leading-normal">
           Enter the 5 digit code that was sent to your email address: {""}
           <Text className="text-primary font-bold">{email}</Text>
         </Text>
@@ -189,7 +189,7 @@ const ForgotPassword2 = () => {
               onFocus={handleFocus}
               keyboardType="number-pad"
               maxLength={1}
-              className={`h-[60px] w-[60px] border-[2px] rounded-[12px] text-black text-center text-[18px] font-bold ${
+              className={`h-[60px] w-[60px] border-[2px] rounded-[12px] text-black text-center text-xl font-bold ${
                 isOtpInvalid ? "border-[#E65656]" : "border-grayText"
               }`}
               returnKeyType="next"
@@ -197,18 +197,18 @@ const ForgotPassword2 = () => {
           ))}
         </View>
         {isOtpInvalid && (
-          <Text className="text-[#E65656] text-[13px] mb-[26px] pl-2">
+          <Text className="text-[#E65656] text-base mb-[26px] pl-2">
             Invalid OTP. Please try again.
           </Text>
         )}
 
         <View className="self-start pl-2 mb-[26px] flex-row items-center">
-          <Text className="text-[13px] text-gray-700 leading-normal">
+          <Text className="text-base text-gray-700 leading-normal">
             Didn't receive the code?{" "}
           </Text>
           <TouchableOpacity onPress={handleResendPress} disabled={timer > 0}>
             <Text
-              className={`text-[13px] font-semibold underline ${
+              className={`text-base font-semibold underline ${
                 timer > 0 ? "text-gray-400" : "text-primary"
               }`}
             >
@@ -217,7 +217,7 @@ const ForgotPassword2 = () => {
           </TouchableOpacity>
 
           {timer > 0 && (
-            <Text className="ml-2 text-[13px] text-gray-500">({timer}s)</Text>
+            <Text className="ml-2 text-base text-gray-500">({timer}s)</Text>
           )}
         </View>
       </View>
@@ -230,7 +230,7 @@ const ForgotPassword2 = () => {
           }`}
           disabled={!allFilled}
         >
-          <Text className="text-white text-[16px] font-bold">
+          <Text className="text-white text-xl font-bold">
             {loading ? "Loading..." : "Next"}
           </Text>
         </TouchableOpacity>

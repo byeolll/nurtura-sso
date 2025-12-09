@@ -24,11 +24,11 @@ const EmailOTP = () => {
   return (
     <View className="flex-1 bg-white px-[16px] pb-[34px] w-screen justify-between h-screen">
       <View className="mt-[34px] flex-1 items-start">
-        <Text className="text-black font-bold text-[24px] pl-2 mb-[13px]">
+        <Text className="text-black font-bold text-3xl pl-2 mb-[13px]">
           Enter one-time code
         </Text>
 
-        <Text className="pl-2 mb-[20px] text-[13px] text-gray-700 leading-normal">
+        <Text className="pl-2 mb-[20px] text-base text-gray-700 leading-normal">
           Enter the 5 digit code that was sent to your email address:{" "}
           <Text className="text-primary font-bold">{savedEmail}</Text>
         </Text>
@@ -43,7 +43,7 @@ const EmailOTP = () => {
         />
 
         {isOtpInvalid && (
-          <Text className="text-[#E65656] text-[13px] mb-[26px] pl-2">
+          <Text className="text-[#E65656] text-base mb-[26px] pl-2">
             Invalid OTP. Please try again.
           </Text>
         )}
